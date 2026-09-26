@@ -1,0 +1,44 @@
+name: Deploy to Netlify
+
+on:
+  workflow_dispatch:
+    inputs:
+      site_id:
+        description: Netlify site id
+        required: true
+      proxy_path:
+        description: Netlify MCP deploy proxy path (short-lived)
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: verify
+      - uses: actions/checkout@v4
+        with:
+          path: deploy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        working-directory: verify
+        run: npm install --no-audit --no-fund
+      - name: Type check (informational)
+        working-directory: verify
+        run: npx tsc --noEmit -p tsconfig.json || echo "::warning::Type check reported issues"
+      - name: Build (verify)
+        working-directory: verify
+        run: npm run build
+      - name: Deploy via Netlify (clean checkout, built on Netlify)
+        working-directory: deploy
+        env:
+          SITE_ID: ${{ inputs.site_id }}
+          PROXY_PATH: ${{ inputs.proxy_path }}
+        run: |
+          echo "::add-mask::$PROXY_PATH"
+          rm -rf .git
+          npx -y @netlify/mcp@latest --site-id "$SITE_ID" --proxy-path "$PROXY_PATH"
