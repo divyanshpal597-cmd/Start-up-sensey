@@ -40,7 +40,7 @@ Task: Understand the business idea, then analyse its target customers and its ma
 Return JSON with exactly these keys:
 {
   "businessOverview": {
-    "businessName": string (short, clear name of the business idea as the user described it, e.g. "Paper Plate Manufacturing"),
+    "businessName": string (a possible brand name for this business),
     "businessType": "Product" | "Service" | "Hybrid" (if the user chose "Let AI decide", decide; otherwise keep their choice),
     "category": string (industry category),
     "businessModel": string (how it makes money, 1-2 sentences),

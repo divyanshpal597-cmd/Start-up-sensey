@@ -60,7 +60,7 @@ async function analyze(page, form) {
   const t0 = Date.now();
   const stagesSeen = new Set();
   // record real progress stages while waiting
-  while (Date.now() - t0 < 6 * 60_000) {
+  while (Date.now() - t0 < 10 * 60_000) {
     const body = await page.locator("main").innerText().catch(() => "");
     const m = body.match(/(Understanding business idea|Analyzing competition|Identifying raw materials|Finding nearby sources|Preparing report)[^\n]*/);
     if (m) stagesSeen.add(m[1]);
@@ -99,16 +99,16 @@ async function capturePageData(page, key) {
   d.suppliersShot = await shot(page, `${key}-suppliers`);
 
   await page.goto(`${BASE}/customers`);
-  await page.waitForTimeout(800);
+  await page.getByText("Who buys from").waitFor({ timeout: 30000 });
   d.customers = (await mainText(page)).slice(0, 3000);
 
   await page.goto(`${BASE}/financial`);
-  await page.waitForTimeout(800);
+  await page.getByText("Unit economics").first().waitFor({ timeout: 30000 });
   d.financial = (await mainText(page)).slice(0, 3000);
   d.financialShot = await shot(page, `${key}-financial`);
 
   await page.goto(`${BASE}/competitors`);
-  await page.waitForTimeout(800);
+  await page.getByText("Competition for").first().waitFor({ timeout: 30000 });
   d.competitors = (await mainText(page)).slice(0, 3000);
   return d;
 }
@@ -248,7 +248,7 @@ await test("X2", "Other pages work with the current business", async (check) => 
     ["/market", /Market for/], ["/what-if", /What if/], ["/stress-test", /Low Demand/], ["/competitors", /Competition for/], ["/reports", /Executive Summary/],
   ]) {
     await page.goto(`${BASE}${p}`);
-    await page.waitForTimeout(1200);
+    await page.waitForFunction((r) => new RegExp(r).test(document.querySelector("main")?.innerText || ""), re.source, { timeout: 30000 }).catch(() => {});
     const txt = await mainText(page);
     check(`${p} renders for current business`, re.test(txt) && /ev charging|charging station/i.test(txt), txt.slice(0, 160));
   }

@@ -73,6 +73,9 @@ function DashboardBody() {
             <div className="flex flex-wrap items-center gap-2">
               <Pill className="bg-indigo-50 text-indigo-700 ring-indigo-200">{ov.businessType || idea.businessType}</Pill>
               {ov.category && <Pill>{ov.category}</Pill>}
+              {ov.suggestedBrandName && ov.suggestedBrandName !== ov.businessName && (
+                <span className="text-xs text-slate-500">AI brand idea: <b className="text-slate-700">{ov.suggestedBrandName}</b></span>
+              )}
               <span className="text-xs text-slate-500">Analysed {fmtDate(analysis.updatedAt)}</span>
             </div>
             <h1 data-testid="business-name" className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">

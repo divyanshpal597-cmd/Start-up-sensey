@@ -167,49 +167,83 @@ function osmAddress(t: Record<string, string>): { address: string | null; locali
   return { address: parts.length >= 2 ? parts.join(", ") : null, locality };
 }
 
+/** Queries all Overpass mirrors in parallel and returns the first successful answer. */
 async function overpass(query: string): Promise<any[]> {
-  let lastErr: unknown;
-  for (const ep of OVERPASS) {
-    try {
-      const res = await fetch(ep, {
-        method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": UA },
-        body: "data=" + encodeURIComponent(query),
-        signal: AbortSignal.timeout(40_000),
-      });
-      if (!res.ok) throw new Error(`Overpass ${new URL(ep).host} HTTP ${res.status}`);
-      const d: any = await res.json();
-      return Array.isArray(d?.elements) ? d.elements : [];
-    } catch (e) {
-      lastErr = e;
-      console.warn("Overpass endpoint failed", ep, String(e));
+  const ctrl = new AbortController();
+  const attempts = OVERPASS.map(async (ep) => {
+    const res = await fetch(ep, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": UA },
+      body: "data=" + encodeURIComponent(query),
+      signal: AbortSignal.any([ctrl.signal, AbortSignal.timeout(28_000)]),
+    });
+    if (!res.ok) throw new Error(`Overpass ${new URL(ep).host} HTTP ${res.status}`);
+    const d: any = await res.json();
+    if (d?.remark && /runtime error|timed out/i.test(d.remark)) throw new Error(`Overpass ${new URL(ep).host}: ${d.remark}`);
+    return Array.isArray(d?.elements) ? d.elements : [];
+  });
+  try {
+    const r = await Promise.any(attempts);
+    ctrl.abort();
+    return r;
+  } catch (e: any) {
+    const errs = (e?.errors || [e]).map((x: any) => String(x?.message || x));
+    throw new Error(`Overpass unavailable (${errs.join("; ").slice(0, 200)})`);
+  }
+}
+
+// Tags that alone say nothing about WHAT a business sells.
+const GENERIC_TAGS = new Set([
+  "shop=wholesale", "industrial=warehouse", "industrial=factory", "man_made=works", "office=company",
+  "shop=general", "shop=variety_store", "industrial=yes", "craft=yes", "shop=yes",
+]);
+
+function bbox(center: { lat: number; lng: number }, radiusKm: number) {
+  const dLat = radiusKm / 111;
+  const dLng = radiusKm / (111 * Math.max(0.2, Math.cos((center.lat * Math.PI) / 180)));
+  return { s: center.lat - dLat, w: center.lng - dLng, n: center.lat + dLat, e: center.lng + dLng };
+}
+
+type Matched = { matchedFor: string[]; reasons: string[]; relevance: number };
+
+function matchTargets(name: string, t: Record<string, string>, targets: SearchTarget[]): Matched {
+  const hay = `${name} ${t.products || ""} ${t.description || ""}`.toLowerCase();
+  const matchedFor: string[] = [];
+  const reasons: string[] = [];
+  let relevance = 0;
+  for (const target of targets) {
+    const kws = cleanKeywords(target.keywords).filter((k) => new RegExp(`\\b${escapeRe(k)}`, "i").test(hay));
+    const tags = cleanOsmTags(target.osmTags).filter((tag) => {
+      const [k, v] = tag.split("=");
+      return t[k] === v && !GENERIC_TAGS.has(tag);
+    });
+    if (kws.length || tags.length) {
+      matchedFor.push(target.name);
+      relevance += kws.reduce((sum, k) => sum + (k.includes(" ") ? 4 : 3), 0) + tags.length * 2;
+      reasons.push(kws.length ? `name mentions "${kws[0]}"` : `mapped as ${tags[0]}`);
     }
   }
-  throw lastErr ?? new Error("Overpass unavailable");
+  if (t.shop === "wholesale" || t.industrial || t.man_made === "works") relevance += 1;
+  return { matchedFor, reasons, relevance };
 }
 
 export async function searchOSM(center: { lat: number; lng: number }, targets: SearchTarget[], radiusKm: number): Promise<PlaceResult[]> {
-  const R = Math.round(Math.min(Math.max(radiusKm, 1), 60) * 1000);
-  const around = `(around:${R},${center.lat.toFixed(5)},${center.lng.toFixed(5)})`;
-  const clauses: string[] = [];
+  const R = Math.min(Math.max(radiusKm, 1), 60);
+  const b = bbox(center, R);
   const kwAll = new Set<string>();
   const tagAll = new Set<string>();
   for (const t of targets) {
     cleanKeywords(t.keywords).forEach((k) => kwAll.add(k));
-    cleanOsmTags(t.osmTags).forEach((k) => tagAll.add(k));
+    cleanOsmTags(t.osmTags).filter((x) => !GENERIC_TAGS.has(x)).forEach((k) => tagAll.add(k));
   }
-  if (kwAll.size) {
-    const re = Array.from(kwAll).map(escapeRe).join("|");
-    clauses.push(`nwr["name"~"${re}",i]${around};`);
-    clauses.push(`nwr["products"~"${re}",i]${around};`);
-    clauses.push(`nwr["description"~"${re}",i]["name"]${around};`);
-  }
+  const clauses: string[] = [];
+  if (kwAll.size) clauses.push(`nw["name"~"${Array.from(kwAll).map(escapeRe).join("|")}",i];`);
   for (const tag of tagAll) {
     const [k, v] = tag.split("=");
-    clauses.push(`nwr["${k}"="${v.replace(/"/g, "")}"]["name"]${around};`);
+    clauses.push(`nw["${k}"="${v.replace(/"/g, "")}"]["name"];`);
   }
   if (!clauses.length) return [];
-  const query = `[out:json][timeout:35];(${clauses.join("")});out center tags 300;`;
+  const query = `[out:json][timeout:25][bbox:${b.s.toFixed(4)},${b.w.toFixed(4)},${b.n.toFixed(4)},${b.e.toFixed(4)}];(${clauses.join("")});out center tags 400;`;
   const elements = await overpass(query);
 
   const results: PlaceResult[] = [];
@@ -221,26 +255,10 @@ export async function searchOSM(center: { lat: number; lng: number }, targets: S
     const lat = el.lat ?? el.center?.lat;
     const lng = el.lon ?? el.center?.lon;
     if (typeof lat !== "number" || typeof lng !== "number") continue;
-    const hay = `${name} ${t.products || ""} ${t.description || ""}`.toLowerCase();
-
-    const matchedFor: string[] = [];
-    const reasons: string[] = [];
-    let relevance = 0;
-    for (const target of targets) {
-      const kws = cleanKeywords(target.keywords).filter((k) => hay.includes(k));
-      const tags = cleanOsmTags(target.osmTags).filter((tag) => {
-        const [k, v] = tag.split("=");
-        return t[k] === v;
-      });
-      if (kws.length || tags.length) {
-        matchedFor.push(target.name);
-        relevance += kws.reduce((s, k) => s + (k.includes(" ") ? 4 : 3), 0) + tags.length * 2;
-        if (kws.length) reasons.push(`name/products mention "${kws[0]}"`);
-        else reasons.push(`mapped as ${tags[0]}`);
-      }
-    }
-    if (!matchedFor.length) continue;
-    if (t.shop === "wholesale" || t.industrial || t.man_made === "works") relevance += 1;
+    const distanceKm = Math.round(haversineKm(center, { lat, lng }) * 10) / 10;
+    if (distanceKm > R) continue;
+    const m = matchTargets(name, t, targets);
+    if (!m.matchedFor.length) continue;
     const { address, locality } = osmAddress(t);
     const phone = t.phone || t["contact:phone"] || t["contact:mobile"] || null;
     results.push({
@@ -248,15 +266,15 @@ export async function searchOSM(center: { lat: number; lng: number }, targets: S
       source: "OpenStreetMap",
       name,
       supplierType: classify(name, t),
-      matchedFor,
-      matchReason: Array.from(new Set(reasons)).slice(0, 2).join("; "),
-      relevance,
+      matchedFor: m.matchedFor,
+      matchReason: Array.from(new Set(m.reasons)).slice(0, 2).join("; "),
+      relevance: m.relevance,
       address,
       addressApproximate: false,
       locality,
       lat,
       lng,
-      distanceKm: Math.round(haversineKm(center, { lat, lng }) * 10) / 10,
+      distanceKm,
       phone: phone ? phone.split(";")[0].trim() : null,
       email: t.email || t["contact:email"] || null,
       website: t.website || t["contact:website"] || t.url || null,
@@ -270,6 +288,70 @@ export async function searchOSM(center: { lat: number; lng: number }, targets: S
     });
   }
   return results;
+}
+
+/** Fallback when Overpass is down: Nominatim keyword search bounded to the area (max 1 request/second). */
+export async function searchNominatim(center: { lat: number; lng: number }, targets: SearchTarget[], radiusKm: number): Promise<PlaceResult[]> {
+  const b = bbox(center, Math.min(Math.max(radiusKm, 1), 60));
+  const kws: string[] = [];
+  for (const t of targets) for (const k of cleanKeywords(t.keywords).slice(0, 2)) if (!kws.includes(k)) kws.push(k);
+  const out: PlaceResult[] = [];
+  let ok = 0;
+  for (const kw of kws.slice(0, 10)) {
+    try {
+      const d: any = await fetchJson(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=20&bounded=1&extratags=1&addressdetails=1` +
+          `&viewbox=${b.w.toFixed(4)},${b.n.toFixed(4)},${b.e.toFixed(4)},${b.s.toFixed(4)}&q=${encodeURIComponent(kw)}`,
+        { headers: { "user-agent": UA, "accept-language": "en" } },
+        12_000
+      );
+      ok++;
+      for (const r of Array.isArray(d) ? d : []) {
+        const name = r.name || r.namedetails?.name;
+        if (!name || ["boundary", "place", "highway", "landuse", "natural", "waterway", "railway"].includes(r.category)) continue;
+        const t: Record<string, string> = { ...(r.extratags || {}), [r.category]: r.type };
+        if (t.amenity && EXCLUDED_AMENITIES.has(t.amenity)) continue;
+        const lat = Number(r.lat);
+        const lng = Number(r.lon);
+        const distanceKm = Math.round(haversineKm(center, { lat, lng }) * 10) / 10;
+        if (distanceKm > radiusKm) continue;
+        const m = matchTargets(name, t, targets);
+        if (!m.matchedFor.length) continue;
+        const a = r.address || {};
+        const phone = t.phone || t["contact:phone"] || null;
+        out.push({
+          id: `osm:${r.osm_type}/${r.osm_id}`,
+          source: "OpenStreetMap",
+          name,
+          supplierType: classify(name, t),
+          matchedFor: m.matchedFor,
+          matchReason: Array.from(new Set(m.reasons)).slice(0, 2).join("; "),
+          relevance: m.relevance,
+          address: r.display_name || null,
+          addressApproximate: false,
+          locality: a.suburb || a.neighbourhood || a.city_district || a.city || null,
+          lat,
+          lng,
+          distanceKm,
+          phone: phone ? String(phone).split(";")[0].trim() : null,
+          email: t.email || t["contact:email"] || null,
+          website: t.website || t["contact:website"] || null,
+          openingHours: t.opening_hours || null,
+          openNow: null,
+          rating: null,
+          ratingCount: null,
+          price: null,
+          products: null,
+          sourceUrl: `https://www.openstreetmap.org/${r.osm_type}/${r.osm_id}`,
+        });
+      }
+    } catch (e) {
+      console.warn("Nominatim search failed", kw, String(e));
+    }
+    await sleep(1100);
+  }
+  if (!ok) throw new Error("Nominatim search unavailable");
+  return out;
 }
 
 export async function searchGoogle(
@@ -376,7 +458,14 @@ export async function findNearby(opts: {
     all.push(...o);
     sources.push("OpenStreetMap");
   } catch (e) {
-    errors.push(`OpenStreetMap: ${String((e as Error)?.message || e)}`);
+    console.warn("Overpass failed, falling back to Nominatim", String(e));
+    try {
+      const o = await searchNominatim(opts.center, opts.targets, opts.radiusKm);
+      all.push(...o);
+      sources.push("OpenStreetMap");
+    } catch (e2) {
+      errors.push(`OpenStreetMap: ${String((e as Error)?.message || e)}; ${String((e2 as Error)?.message || e2)}`);
+    }
   }
 
   // dedupe: same normalised name within 300 m → keep the richer record (Google first)
@@ -402,7 +491,7 @@ export async function findNearby(opts: {
   // Reverse-geocode a limited number of listings without an address (Nominatim: max 1 req/s).
   let lookups = 0;
   for (const r of limited) {
-    if (r.address || lookups >= 12) continue;
+    if (r.address || lookups >= 8) continue;
     lookups++;
     const a = await reverseGeocode(r.lat, r.lng);
     if (a) {

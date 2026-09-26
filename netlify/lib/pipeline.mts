@@ -81,13 +81,13 @@ export async function searchSuppliers(ai: any, geo: { lat: number; lng: number }
       materials: targets.map((t) => t.name),
     };
   }
-  let radius = radiusKm ?? 25;
+  let radius = radiusKm ?? 20;
   let found = await findNearby({ center: geo, targets, radiusKm: radius, city: input.city, kind: "supplier" });
-  if (!radiusKm && found.status !== "unavailable" && found.results.length < 8) {
-    radius = 60; // widen automatically when little is found nearby
+  if (!radiusKm && found.status !== "unavailable" && found.results.length < 5) {
+    radius = 50; // widen automatically when little is found nearby
     found = await findNearby({ center: geo, targets, radiusKm: radius, city: input.city, kind: "supplier" });
   }
-  return { ...found, whereToLook, materials: targets.map((t) => t.name), autoExpanded: !radiusKm && radius === 60 };
+  return { ...found, whereToLook, materials: targets.map((t) => t.name), autoExpanded: !radiusKm && radius === 50 };
 }
 
 export async function searchCompetitors(ai: any, geo: { lat: number; lng: number } | null, input: IdeaInput, radiusKm = 15) {
@@ -149,7 +149,8 @@ export async function runAnalysis(p: { analysisId: string; ideaId: string; owner
           "All figures and assessments are AI estimates generated from your inputs. They are not verified real-world data. Validate with real customers, suppliers and local experts before investing.",
       },
       businessOverview: {
-        businessName: str(ov.businessName, input.businessName),
+        businessName: input.businessName,
+        suggestedBrandName: str(ov.businessName),
         businessType: ["Product", "Service", "Hybrid"].includes(ov.businessType) ? ov.businessType : input.businessType,
         category: str(ov.category, input.category),
         businessModel: str(ov.businessModel),
@@ -223,7 +224,6 @@ export async function runAnalysis(p: { analysisId: string; ideaId: string; owner
 
     await stage(analysisId, 7);
     await db.patchIdea(ideaId, {
-      businessName: ai.businessOverview.businessName,
       businessType: ai.businessOverview.businessType,
       category: ai.businessOverview.category,
     });
