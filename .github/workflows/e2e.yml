@@ -27,6 +27,7 @@ jobs:
         env:
           NODE_PATH: /tmp/pw/node_modules
         run: |
+          ln -s /tmp/pw/node_modules node_modules
           set -a; source .ci/e2e-trigger; set +a
           mkdir -p e2e-output
           set -o pipefail
