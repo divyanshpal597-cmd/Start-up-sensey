@@ -113,7 +113,7 @@ function Body() {
             action={
               <div className="flex items-center gap-2">
                 <select className="input w-28 py-1.5 text-xs" value={radius} onChange={(e) => setRadius(Number(e.target.value))} aria-label="Search radius">
-                  {[5, 10, 25, 40, 60].map((r) => <option key={r} value={r}>{r} km</option>)}
+                  {[5, 10, 20, 25, 40, 50, 60].map((r) => <option key={r} value={r}>{r} km</option>)}
                 </select>
                 <button onClick={() => start({ radiusKm: radius })} disabled={running} className={cx("btn-primary", SIZE.sm)}>
                   {running ? <Spinner className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />} {running ? "Searching…" : "Search again"}

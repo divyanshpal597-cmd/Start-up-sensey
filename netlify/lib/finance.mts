@@ -144,10 +144,18 @@ export function cleanOsmTags(v: unknown): string[] {
     return !!m && TAG_KEYS.has(m[1]);
   });
 }
+// Words too generic to identify what a business sells.
+const GENERIC_KEYWORDS = new Set([
+  "shop", "store", "stores", "traders", "trader", "trading", "enterprises", "enterprise", "company", "india", "services",
+  "service", "industrial", "industry", "industries", "equipment", "machinery", "machine", "engineering", "products",
+  "product", "materials", "material", "supply", "supplies", "supplier", "suppliers", "general", "works", "hardware",
+  "wholesale", "dealer", "dealers", "distributor", "center", "centre", "mart", "house", "agency", "raw",
+]);
+
 export function cleanKeywords(v: unknown, max = 6): string[] {
   return strArr(v, 12)
     .map((k) => k.toLowerCase().replace(/[^a-z0-9 &]/g, " ").replace(/\s+/g, " ").trim())
     .filter((k) => k.length >= 3 && k.length <= 30)
-    .filter((k) => !["shop", "store", "traders", "trader", "enterprises", "company", "india", "services"].includes(k))
+    .filter((k) => !GENERIC_KEYWORDS.has(k))
     .slice(0, max);
 }

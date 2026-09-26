@@ -152,6 +152,12 @@ const EXCLUDED_AMENITIES = new Set([
   "bank", "atm", "restaurant", "cafe", "fast_food", "pharmacy", "police", "townhall", "bus_station", "parking",
 ]);
 
+// Names that are clearly not suppliers (institutions, departments, residences).
+const NON_BUSINESS_NAME = /\b(department|dept\.?|hostel|institute|university|college|school|hospital|temple|mosque|church|office \(|police|court|government|govt\.?|municipal|nagar nigam|railway|station road)\b/i;
+const NON_BUSINESS_TAGS = (t: Record<string, string>) =>
+  ["educational_institution", "government", "university", "research"].includes(t.office) ||
+  ["university", "college", "school", "government", "public"].includes(t.building);
+
 function escapeRe(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\"]/g, "\\$&");
 }
@@ -207,8 +213,9 @@ function bbox(center: { lat: number; lng: number }, radiusKm: number) {
 type Matched = { matchedFor: string[]; reasons: string[]; relevance: number };
 
 function matchTargets(name: string, t: Record<string, string>, targets: SearchTarget[]): Matched {
-  const hay = `${name} ${t.products || ""} ${t.description || ""}`.toLowerCase();
   const matchedFor: string[] = [];
+  if (NON_BUSINESS_TAGS(t) || (NON_BUSINESS_NAME.test(name) && !/charging/i.test(name))) return { matchedFor, reasons: [], relevance: 0 };
+  const hay = `${name} ${t.products || ""} ${t.description || ""}`.toLowerCase();
   const reasons: string[] = [];
   let relevance = 0;
   for (const target of targets) {
