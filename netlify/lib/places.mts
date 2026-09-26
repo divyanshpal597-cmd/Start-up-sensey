@@ -155,6 +155,7 @@ const EXCLUDED_AMENITIES = new Set([
 // Names that are clearly not suppliers (institutions, departments, residences).
 const NON_BUSINESS_NAME = /\b(department|dept\.?|hostel|institute|university|college|school|hospital|temple|mosque|church|office \(|police|court|government|govt\.?|municipal|nagar nigam|railway|station road)\b/i;
 const NON_BUSINESS_TAGS = (t: Record<string, string>) =>
+  !!(t.leisure || t.sport || t.tourism || t.club || t.healthcare) ||
   ["educational_institution", "government", "university", "research"].includes(t.office) ||
   ["university", "college", "school", "government", "public"].includes(t.building);
 
