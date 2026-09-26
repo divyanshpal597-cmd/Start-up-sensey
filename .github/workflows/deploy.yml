@@ -6,9 +6,6 @@ on:
       site_id:
         description: Netlify site id
         required: true
-      proxy_path:
-        description: Netlify MCP deploy proxy path (short-lived)
-        required: true
 
 jobs:
   deploy:
@@ -37,7 +34,7 @@ jobs:
         working-directory: deploy
         env:
           SITE_ID: ${{ inputs.site_id }}
-          PROXY_PATH: ${{ inputs.proxy_path }}
+          PROXY_PATH: ${{ secrets.NETLIFY_MCP_PROXY }}
         run: |
           echo "::add-mask::$PROXY_PATH"
           rm -rf .git

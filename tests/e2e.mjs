@@ -125,7 +125,7 @@ page.on("dialog", (d) => d.accept());
 // establish workspace + status
 await page.goto(`${BASE}/`);
 await page.waitForTimeout(1500);
-results.workspaceKey = await page.evaluate(() => localStorage.getItem("ss_owner_key"));
+let workspaceKey = await page.evaluate(() => localStorage.getItem("ss_owner_key"));
 results.status = await page.evaluate(async () => (await fetch("/api/status")).json()).catch((e) => String(e));
 
 await test("X0", "Empty state before any analysis", async (check) => {
@@ -235,7 +235,7 @@ await test("D", "Data persists across browser refresh", async (check) => {
   const ctx2 = await browser.newContext();
   const p2 = await ctx2.newPage();
   await p2.goto(`${BASE}/settings`);
-  await p2.evaluate((k) => localStorage.setItem("ss_owner_key", k), results.workspaceKey);
+  await p2.evaluate((k) => localStorage.setItem("ss_owner_key", k), workspaceKey);
   await p2.goto(`${BASE}/ideas`);
   await p2.waitForSelector('[data-testid="idea-card"]', { timeout: 30000 });
   const names2 = await p2.locator('[data-testid="idea-name"]').allInnerTexts();
@@ -329,7 +329,7 @@ await test("X3", "Mobile layout", async (check) => {
   const m = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
   const mp = await m.newPage();
   await mp.goto(`${BASE}/settings`);
-  await mp.evaluate((k) => localStorage.setItem("ss_owner_key", k), results.workspaceKey);
+  await mp.evaluate((k) => localStorage.setItem("ss_owner_key", k), workspaceKey);
   await mp.goto(`${BASE}/`);
   await mp.waitForSelector('[data-testid="business-name"]', { timeout: 30000 });
   const overflow = await mp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
