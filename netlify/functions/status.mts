@@ -12,6 +12,7 @@ export default async () =>
     },
     database: { configured: Boolean(env("SUPABASE_URL") && env("SUPABASE_KEY") && env("SS_API_SECRET")) },
     failureTestAllowed: env("ALLOW_FAILURE_TEST") !== "false",
+    deploy: env("COMMIT_REF")?.slice(0, 7) || null,
   });
 
 export const config: Config = { path: "/api/status", method: ["GET"] };

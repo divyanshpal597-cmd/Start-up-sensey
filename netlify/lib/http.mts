@@ -31,7 +31,11 @@ export function errorResponse(err: unknown): Response {
 }
 
 export function env(name: string): string | undefined {
-  const v = Netlify.env.get(name);
+  let v: string | undefined;
+  try {
+    v = (globalThis as any).Netlify?.env?.get(name);
+  } catch {}
+  if (!v) v = process.env[name];
   return v && v.trim() ? v.trim() : undefined;
 }
 
