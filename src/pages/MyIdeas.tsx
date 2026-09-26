@@ -16,7 +16,7 @@ export default function MyIdeas() {
     refreshIdeas();
   }, [refreshIdeas]);
   const pending = ideas.some((i) => i.analysis && ["queued", "running"].includes(i.analysis.status));
-  usePolling(pending, refreshIdeas, 4000);
+  usePolling(pending, () => { refreshIdeas(); }, 4000);
 
   const list = useMemo(
     () => ideas.filter((i) => `${i.businessName} ${i.city} ${i.category || ""}`.toLowerCase().includes(q.toLowerCase())),
