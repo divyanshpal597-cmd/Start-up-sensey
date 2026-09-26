@@ -9,6 +9,8 @@ on:
     paths-ignore:
       - ".ci/e2e-trigger"
       - "README.md"
+      - "tests/**"
+      - ".github/workflows/e2e.yml"
   workflow_dispatch:
 
 permissions:

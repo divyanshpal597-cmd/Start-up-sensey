@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   e2e:
@@ -23,6 +24,17 @@ jobs:
         run: |
           mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm install --no-audit --no-fund playwright@1.55.0
           npx playwright install --with-deps chromium
+      - name: Wait for any running deploy to finish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sleep 20
+          for i in $(seq 1 60); do
+            n=$(gh run list -R "${{ github.repository }}" --workflow deploy.yml --json status -q '[.[] | select(.status != "completed")] | length')
+            echo "deploys in progress: $n"
+            [ "$n" = "0" ] && break
+            sleep 15
+          done
       - name: Run tests
         env:
           NODE_PATH: /tmp/pw/node_modules
