@@ -26,6 +26,7 @@ export function CurrentIdeaProvider({ children }: { children: ReactNode }) {
   const [ideas, setIdeas] = useState<any[]>([]);
   const [ideasLoaded, setIdeasLoaded] = useState(false);
   const reqId = useRef(0);
+  const userSelected = useRef(false);
 
   const refreshIdeas = useCallback(async () => {
     try {
@@ -69,6 +70,7 @@ export function CurrentIdeaProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       const list = await refreshIdeas();
+      if (userSelected.current) return; // user picked an idea while we were loading — don't override it
       let id = ideaId;
       if (id && !list.some((i) => i.id === id)) id = null;
       if (!id) {
@@ -84,6 +86,7 @@ export function CurrentIdeaProvider({ children }: { children: ReactNode }) {
 
   const selectIdea = useCallback(
     async (id: string | null) => {
+      userSelected.current = true;
       storageSet(CURRENT_KEY, id);
       setIdeaId(id);
       setLoading(true);
