@@ -1,11 +1,27 @@
 name: Deploy to Netlify
 
+# Every push to main builds and deploys. The Netlify deploy credential is never stored in
+# this repo: it is released by a Supabase edge function only after verifying this run's
+# GitHub OIDC token (repo = this repo, ref = main, event = push).
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - ".ci/e2e-trigger"
+      - "README.md"
   workflow_dispatch:
-    inputs:
-      site_id:
-        description: Netlify site id
-        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  SITE_ID: e1edb22d-3fe9-4902-97a8-632190ea2425
+  CREDENTIAL_URL: https://dzxjdsqgocvtkcxfbhnx.supabase.co/functions/v1/ci-deploy-credential
 
 jobs:
   deploy:
@@ -21,21 +37,37 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
+      - name: Install, type check and build
         working-directory: verify
-        run: npm install --no-audit --no-fund
-      - name: Type check (informational)
-        working-directory: verify
-        run: npx tsc --noEmit -p tsconfig.json || echo "::warning::Type check reported issues"
-      - name: Build (verify)
-        working-directory: verify
-        run: npm run build
-      - name: Deploy via Netlify (clean checkout, built on Netlify)
-        working-directory: deploy
-        env:
-          SITE_ID: ${{ inputs.site_id }}
-          PROXY_PATH: ${{ secrets.NETLIFY_MCP_PROXY }}
         run: |
-          echo "::add-mask::$PROXY_PATH"
+          mkdir -p ../report
+          set -o pipefail
+          npm install --no-audit --no-fund 2>&1 | tail -30 > ../report/install.log
+          (npx tsc --noEmit -p tsconfig.json 2>&1 || true) | head -200 > ../report/typecheck.log
+          npm run build 2>&1 | tail -60 > ../report/build.log
+      - name: Get deploy credential (OIDC-gated)
+        id: cred
+        run: |
+          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=startup-sense-deploy" | jq -r .value)
+          RESP=$(curl -s -w '\n%{http_code}' -H "Authorization: Bearer $TOKEN" "$CREDENTIAL_URL")
+          CODE=$(echo "$RESP" | tail -1)
+          echo "credential http $CODE" > report/credential.log
+          PROXY=$(echo "$RESP" | head -1 | jq -r .proxyPath)
+          echo "::add-mask::$PROXY"
+          echo "PROXY_PATH=$PROXY" >> "$GITHUB_ENV"
+      - name: Deploy via Netlify (built on Netlify)
+        working-directory: deploy
+        run: |
           rm -rf .git
-          npx -y @netlify/mcp@latest --site-id "$SITE_ID" --proxy-path "$PROXY_PATH"
+          set -o pipefail
+          npx -y @netlify/mcp@latest --site-id "$SITE_ID" --proxy-path "$PROXY_PATH" 2>&1 | sed "s#${PROXY_PATH}#***#g" | tail -80 > ../report/deploy.log
+      - name: Publish report to ci-deploy branch
+        if: always()
+        run: |
+          cd report
+          echo "${{ job.status }} ${{ github.sha }} $(date -u +%FT%TZ)" > status.txt
+          sed -i "s#${PROXY_PATH:-__none__}#***#g" *.log || true
+          git init -q && git checkout -q -b ci-deploy
+          git config user.name ci-bot && git config user.email ci-bot@users.noreply.github.com
+          git add -A && git commit -qm "deploy report ${{ github.run_id }}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci-deploy

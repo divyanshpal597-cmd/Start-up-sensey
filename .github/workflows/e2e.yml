@@ -1,16 +1,11 @@
 name: End-to-end tests
 
+# Runs when .ci/e2e-trigger changes on main. That file holds BASE_URL and ONLY (test ids).
 on:
+  push:
+    branches: [main]
+    paths: [".ci/e2e-trigger"]
   workflow_dispatch:
-    inputs:
-      base_url:
-        description: Site URL to test
-        required: true
-        default: https://startup-sense-ai.netlify.app
-      only:
-        description: Comma-separated test ids to run (A,B,C,D,E,X) — empty = all
-        required: false
-        default: ""
 
 permissions:
   contents: write
@@ -30,10 +25,12 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run tests
         env:
-          BASE_URL: ${{ inputs.base_url }}
-          ONLY: ${{ inputs.only }}
           NODE_PATH: /tmp/pw/node_modules
-        run: node tests/e2e.mjs
+        run: |
+          set -a; source .ci/e2e-trigger; set +a
+          mkdir -p e2e-output
+          set -o pipefail
+          node tests/e2e.mjs 2>&1 | tee e2e-output/run.log
       - name: Publish results to e2e-results branch
         if: always()
         run: |
