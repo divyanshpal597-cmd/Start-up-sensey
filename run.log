@@ -1,0 +1,124 @@
+
+=== R: Empty state → tap “Analyze Your First Idea” (phone + desktop) renders the form, no blank page
+  ✔ phone: form shows after tapping — {"url":"https://startup-sense-ai.netlify.app/new","bodyText":"Language\nEnglish\nहिंदी\nHinglish\nANALYZE NEW IDEA\nTell us about your business idea\n\nYour inputs are sent to a real AI model on our s
+  ✔ desktop: form shows after tapping — {"url":"https://startup-sense-ai.netlify.app/new","bodyText":"STARTUP SENSE\nValidate Before You Invest.\nDashboard\nNew Idea\nMy Ideas\nANALYSIS\nMarket Scanner\nCustomer Validation\nFinancial Planne
+
+=== X0: Empty state before any analysis
+  ✔ Shows 'No Business Idea Analyzed Yet' — No Business Idea Analyzed Yet Describe your business idea and Startup Sense will run a real AI analysis for your location and budget. Analyze Your First Idea
+  ✔ Shows 'Analyze Your First Idea' button
+  ✔ No hard-coded sample business (Organic Tiffin Service)
+
+=== X1: Security: API rejects requests without workspace key / bad input
+  ✔ GET /api/ideas without key → 401 — 401
+  ✔ Invalid idea → 400 with validation message — {"error":{"code":"invalid_input","message":"Business idea is required (at least 3 characters)."}}
+  ✔ No API keys or secrets in frontend bundle
+
+=== A: Paper Plate Manufacturing · Kanpur · ₹50,000
+  ✔ Real analysis completed — {"outcome":"complete","url":"https://startup-sense-ai.netlify.app/analyzing/f218853c-f84a-4136-a18a-13400d900170?analysisId=9fd1b2cd-284d-48b8-8d36-ba7f4dc3e6f4","seconds":198.178,"stagesSeen":["Under
+  ✔ Progress stages came from the server — Understanding business idea | Analyzing competition | Identifying raw materials | Finding nearby sources | Preparing report
+  ✔ Dashboard = Paper Plate Manufacturing — Paper Plate Manufacturing
+  ✔ Dashboard shows Kanpur
+  ✔ SWOT/analysis is about paper plates —  For Paper Plate Manufacturing in Kanpur AI Estimate Strengths • Extremely low initial setup cost fitting the 50000 INR budget • High daily recurring demand from Kanpur's massive street food sector • 
+  ✔ Supply chain materials are paper-related — Single die semi-automatic paper plate machine | Kraft paper rolls and PE coating | Cutting dies (different sizes) | Packaging covers and bundling tape
+  ✔ Customers are relevant B2B buyers — CUSTOMER VALIDATION Who buys from Paper Plate Manufacturing? AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest. Primary customers A
+  ✔ Financials reference plates — FINANCIAL PLANNER Unit economics · Paper Plate Manufacturing Pre-filled with AI estimates for this business. Change any value to see recalculated results. Sales unit: “pack of 50 plates”. Legend: User
+  ✔ AI Estimate labels shown
+  ✔ Supplier search produced live listings or an explicit unavailable message — 0 listings
+
+=== B: EV Charging Station · Kanpur · ₹5,00,000
+  ✔ Real analysis completed — {"outcome":"complete","url":"https://startup-sense-ai.netlify.app/analyzing/52f800f2-8df2-4fe2-b235-2a544ed333e5?analysisId=341a114e-0095-44a3-af51-8229b126be4c","seconds":230.195,"stagesSeen":["Under
+  ✔ Dashboard = EV Charging Station — EV Charging Station
+  ✔ Paper Plate data no longer on dashboard
+  ✔ Supply chain = EV charging equipment/components — AC and DC EV Chargers | Heavy-Duty Electrical Cables and Wiring | Surge Protection Devices and Circuit Breakers | Canopy and Structural Shed Materials
+  ✔ Customers = EV owners / fleets — CUSTOMER VALIDATION Who buys from EV Charging Station? AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest. Primary customers AI Esti
+  ✔ Financials use an EV charging model — FINANCIAL PLANNER Unit economics · EV Charging Station Pre-filled with AI estimates for this business. Change any value to see recalculated results. Sales unit: “kWh charged”. Legend: User Input value
+  ✔ SWOT is about EV charging
+  ✔ Different numbers from Paper Plate (not fixed)
+
+=== C: My Ideas keeps both analyses separately
+  ✔ Paper Plate Manufacturing listed — EV Charging Station | Paper Plate Manufacturing
+  ✔ EV Charging Station listed
+  ✔ Opening Paper Plate shows its original analysis — Paper Plate Manufacturing
+  ✔ Paper Plate dashboard identical to when first analysed
+  ✔ Opening EV Charging Station shows its analysis — EV Charging Station
+
+=== D: Data persists across browser refresh
+  ✔ After refresh, dashboard still shows saved analysis — EV Charging Station
+  ✔ Both ideas still listed after refresh — EV Charging Station | Paper Plate Manufacturing
+  ✔ Saved in the database (visible from a brand-new browser session) — EV Charging Station | Paper Plate Manufacturing
+
+=== X2: Other pages work with the current business
+  ✔ /market renders for current business — MARKET SCANNER Market for EV Charging Station Demand, opportunity and local factors in Kanpur, Uttar Pradesh, India. All market figures are AI estimates. Demand
+  ✔ /what-if renders for current business — WHAT-IF SIMULATOR What if… · EV Charging Station Baseline = AI-estimated unit economics for this business. Move the sliders to see results recalculate instantly
+  ✔ /stress-test renders for current business — BUSINESS STRESS TEST How resilient is EV Charging Station? Each scenario applies a shock to the AI-estimated baseline and recalculates revenue, expenses, profit
+  ✔ /competitors renders for current business — COMPETITOR WAR ROOM Competition for EV Charging Station Competitor profiles below are AI assumptions about typical businesses of each type. Nearby businesses ar
+  ✔ /reports renders for current business — REPORTS Report · EV Charging Station A complete, printable validation report for the currently selected business. Download PDF Print Share STARTUP SENSE · AI BU
+  ✔ Download PDF produces a PDF file — 3129199 bytes
+  ✔ Share creates a read-only link — https://startup-sense-ai.netlify.app/share/76a7f868811328e35de4aead3caaec2c6ca0
+  ✔ Shared link opens report without workspace key
+  ✔ What-if results change when price changes
+  ✔ Pivot generator returns AI pivots — 5 pivots
+
+=== E: AI failure shows an error, never sample data
+  ✔ Error message shown: 'AI analysis could not be completed.' — {"outcome":"failed","url":"https://startup-sense-ai.netlify.app/analyzing/8351b413-41f6-4e3c-83f8-6f8d9098b3c0?analysisId=0215e646-9259-4539-bd8a-7c0574bd68f5","seconds":4.009,"body":"REAL AI ANALYSIS
+  ✔ Retry Analysis + Back to New Idea buttons shown
+  ✔ No results or sample data displayed
+  ✔ Dashboard keeps the last successful analysis (not the failed one) — EV Charging Station
+  ✔ Failure-test idea deleted, others kept — EV Charging Station | Paper Plate Manufacturing
+
+=== L1: Language switching + persists after refresh
+  ✔ Hindi interface (sidebar in Devanagari) — STARTUP SENSE
+अपना पैसा लगाने से पहले जाँचें।
+डैशबोर्ड
+नया आइडिया
+मेरे आइडिया
+विश्लेषण
+मार्केट स्कैनर
+ग्राहक पुष्टि
+वित्
+  ✔ Hindi still selected after refresh
+  ✔ Hinglish interface — STARTUP SENSE
+Paisa lagane se pehle validate karein.
+Dashboard
+Naya Idea
+Mere Ideas
+ANALYSIS
+Market Scanner
+Customer Val
+  ✔ Back to English
+
+=== V1: No voice feature anywhere + typed English idea (new idea: rooftop microgreens)
+  ✔ No mic / voice / read-aloud UI on New Idea — {"els":0,"text":false}
+  ✔ Voice extraction endpoint removed — 404
+  ✔ Button reads ANALYZE BUSINESS IDEA
+  ✔ Typed fields keep their values
+  ✔ Real analysis completed — {"outcome":"complete","seconds":212.224}
+  ✔ Dashboard shows the typed idea
+  ✔ Dashboard location = Indore
+  ✔ Analysis is about microgreens (not a template)
+  ✔ No read-aloud button on dashboard
+
+=== H: Hindi typed idea → analysis generated in Hindi
+  ✔ Real analysis completed — {"outcome":"complete","seconds":212.218}
+  ✔ AI summary written in Devanagari — यह व्यवसाय लखनऊ में छोटे स्तर पर ताजे बकरी के दूध और कोल्ड-प्रोसेस्ड तकनीक से प्रीमियम हर्बल साबुन बनाने का है। आसपास के ग्रामीण क्षेत्रों से आसानी से शुद्ध बकर
+  ✔ Dashboard labels in Hindi
+  ✔ Business is the goat-milk soap idea
+  ✔ Market analysis text in Hindi — मार्केट स्कैनर बकरी के दूध से हर्बल साबुन बनाना का बाज़ार लखनऊ, उत्तर प्रदेश, India में माँग, अवसर और स्थानीय कारक। बाज़ार के सभी आँकड़े AI अनुमान हैं। माँग AI 
+  ✔ No language-mismatch banner (analysis matches UI)
+  ✔ No read-aloud button
+
+=== G: Hinglish typed idea → Hinglish analysis (new idea: drone crop spraying)
+  ✔ Hinglish form labels
+  ✔ Real analysis completed — {"outcome":"complete","seconds":218.202}
+  ✔ Summary is Roman script (no Devanagari) — Yeh business rural Kanpur ke kisaano ko modern agriculture drone ke zariye kam time mein behtar dawai chhidakne ki service dega. ₹3,000,000 ke budget mein ek commercial agricultural drone aur transpor
+  ✔ Summary is Hindi grammar (Hinglish words) — Yeh business rural Kanpur ke kisaano ko modern agriculture drone ke zariye kam time mein behtar dawai chhidakne ki service dega. ₹3,000,000 ke budget mein ek commercial agricultural drone aur transpor
+
+=== X4: My Ideas lists every analysis (all languages)
+  ✔ Paper plate + EV still present — Drone se kheton mein dawai chhidakne ki service | बकरी के दूध से हर्बल साबुन बनाना | Rooftop hydroponic microgreens farm | EV Charging Station | Paper Plate Manufacturing
+  ✔ English + Hindi + Hinglish ideas saved — Drone se kheton mein dawai chhidakne ki service | बकरी के दूध से हर्बल साबुन बनाना | Rooftop hydroponic microgreens farm | EV Charging Station | Paper Plate Manufacturing
+  ✔ English analysis + Hindi UI → offer to re-analyze in Hindi
+
+=== X3: Mobile layout
+  ✔ No horizontal overflow on phone width
+
+SUMMARY { passed: 15, failed: 0 }

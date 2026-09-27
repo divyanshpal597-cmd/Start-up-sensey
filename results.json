@@ -1,0 +1,701 @@
+{
+  "base": "https://startup-sense-ai.netlify.app",
+  "startedAt": "2026-09-27T17:42:38.439Z",
+  "tests": [
+    {
+      "id": "R",
+      "name": "Empty state → tap “Analyze Your First Idea” (phone + desktop) renders the form, no blank page",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "phone: form shows after tapping",
+          "ok": true,
+          "detail": "{\"url\":\"https://startup-sense-ai.netlify.app/new\",\"bodyText\":\"Language\\nEnglish\\nहिंदी\\nHinglish\\nANALYZE NEW IDEA\\nTell us about your business idea\\n\\nYour inputs are sent to a real AI model on our server. It analyses your specific idea, location and budget — nothing \",\"errs\":[]}"
+        },
+        {
+          "label": "desktop: form shows after tapping",
+          "ok": true,
+          "detail": "{\"url\":\"https://startup-sense-ai.netlify.app/new\",\"bodyText\":\"STARTUP SENSE\\nValidate Before You Invest.\\nDashboard\\nNew Idea\\nMy Ideas\\nANALYSIS\\nMarket Scanner\\nCustomer Validation\\nFinancial Planner\\nSupply Chain & Sources\\nCompetitor War Room\\nSCENARIOS\\nWhat-If Simulat\",\"errs\":[]}"
+        }
+      ],
+      "startedAt": 1790530962551,
+      "ms": 9333
+    },
+    {
+      "id": "X0",
+      "name": "Empty state before any analysis",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Shows 'No Business Idea Analyzed Yet'",
+          "ok": true,
+          "detail": "No Business Idea Analyzed Yet Describe your business idea and Startup Sense will run a real AI analysis for your location and budget. Analyze Your First Idea"
+        },
+        {
+          "label": "Shows 'Analyze Your First Idea' button",
+          "ok": true
+        },
+        {
+          "label": "No hard-coded sample business (Organic Tiffin Service)",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790530971884,
+      "ms": 99
+    },
+    {
+      "id": "X1",
+      "name": "Security: API rejects requests without workspace key / bad input",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "GET /api/ideas without key → 401",
+          "ok": true,
+          "detail": "401"
+        },
+        {
+          "label": "Invalid idea → 400 with validation message",
+          "ok": true,
+          "detail": "{\"error\":{\"code\":\"invalid_input\",\"message\":\"Business idea is required (at least 3 characters).\"}}"
+        },
+        {
+          "label": "No API keys or secrets in frontend bundle",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790530971984,
+      "ms": 1699
+    },
+    {
+      "id": "A",
+      "name": "Paper Plate Manufacturing · Kanpur · ₹50,000",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Real analysis completed",
+          "ok": true,
+          "detail": "{\"outcome\":\"complete\",\"url\":\"https://startup-sense-ai.netlify.app/analyzing/f218853c-f84a-4136-a18a-13400d900170?analysisId=9fd1b2cd-284d-48b8-8d36-ba7f4dc3e6f4\",\"seconds\":198.178,\"stagesSeen\":[\"Understanding business idea\",\"Analyzing competition\",\"Identifying raw materials\",\"Finding nearby sources\""
+        },
+        {
+          "label": "Progress stages came from the server",
+          "ok": true,
+          "detail": "Understanding business idea | Analyzing competition | Identifying raw materials | Finding nearby sources | Preparing report"
+        },
+        {
+          "label": "Dashboard = Paper Plate Manufacturing",
+          "ok": true,
+          "detail": "Paper Plate Manufacturing"
+        },
+        {
+          "label": "Dashboard shows Kanpur",
+          "ok": true
+        },
+        {
+          "label": "SWOT/analysis is about paper plates",
+          "ok": true,
+          "detail": " For Paper Plate Manufacturing in Kanpur AI Estimate Strengths • Extremely low initial setup cost fitting the 50000 INR budget • High daily recurring demand from Kanpur's massive street food sector • Proximity to regional raw material suppliers in Uttar Pradesh • Simple manufacturing process requiri"
+        },
+        {
+          "label": "Supply chain materials are paper-related",
+          "ok": true,
+          "detail": "Single die semi-automatic paper plate machine | Kraft paper rolls and PE coating | Cutting dies (different sizes) | Packaging covers and bundling tape"
+        },
+        {
+          "label": "Customers are relevant B2B buyers",
+          "ok": true,
+          "detail": "CUSTOMER VALIDATION Who buys from Paper Plate Manufacturing? AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest. Primary customers AI Estimate Street Food & Chaat Vendors Daily vendors selling samosas, chaat, momos, and street meals"
+        },
+        {
+          "label": "Financials reference plates",
+          "ok": true,
+          "detail": "FINANCIAL PLANNER Unit economics · Paper Plate Manufacturing Pre-filled with AI estimates for this business. Change any value to see recalculated results. Sales unit: “pack of 50 plates”. Legend: User Input value you changed · AI Estimate AI-estimated default · Calculated formula result Inputs Inves"
+        },
+        {
+          "label": "AI Estimate labels shown",
+          "ok": true
+        },
+        {
+          "label": "Supplier search produced live listings or an explicit unavailable message",
+          "ok": true,
+          "detail": "0 listings"
+        }
+      ],
+      "startedAt": 1790530973684,
+      "ms": 210433
+    },
+    {
+      "id": "B",
+      "name": "EV Charging Station · Kanpur · ₹5,00,000",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Real analysis completed",
+          "ok": true,
+          "detail": "{\"outcome\":\"complete\",\"url\":\"https://startup-sense-ai.netlify.app/analyzing/52f800f2-8df2-4fe2-b235-2a544ed333e5?analysisId=341a114e-0095-44a3-af51-8229b126be4c\",\"seconds\":230.195,\"stagesSeen\":[\"Understanding business idea\",\"Analyzing competition\",\"Identifying raw materials\",\"Finding nearby sources\""
+        },
+        {
+          "label": "Dashboard = EV Charging Station",
+          "ok": true,
+          "detail": "EV Charging Station"
+        },
+        {
+          "label": "Paper Plate data no longer on dashboard",
+          "ok": true
+        },
+        {
+          "label": "Supply chain = EV charging equipment/components",
+          "ok": true,
+          "detail": "AC and DC EV Chargers | Heavy-Duty Electrical Cables and Wiring | Surge Protection Devices and Circuit Breakers | Canopy and Structural Shed Materials"
+        },
+        {
+          "label": "Customers = EV owners / fleets",
+          "ok": true,
+          "detail": "CUSTOMER VALIDATION Who buys from EV Charging Station? AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest. Primary customers AI Estimate E-Rickshaw Drivers Local commercial operators who need quick battery swaps or rapid top-ups twi"
+        },
+        {
+          "label": "Financials use an EV charging model",
+          "ok": true,
+          "detail": "FINANCIAL PLANNER Unit economics · EV Charging Station Pre-filled with AI estimates for this business. Change any value to see recalculated results. Sales unit: “kWh charged”. Legend: User Input value you changed · AI Estimate AI-estimated default · Calculated formula result Inputs Investment AI Est"
+        },
+        {
+          "label": "SWOT is about EV charging",
+          "ok": true
+        },
+        {
+          "label": "Different numbers from Paper Plate (not fixed)",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790531184118,
+      "ms": 240733
+    },
+    {
+      "id": "C",
+      "name": "My Ideas keeps both analyses separately",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Paper Plate Manufacturing listed",
+          "ok": true,
+          "detail": "EV Charging Station | Paper Plate Manufacturing"
+        },
+        {
+          "label": "EV Charging Station listed",
+          "ok": true
+        },
+        {
+          "label": "Opening Paper Plate shows its original analysis",
+          "ok": true,
+          "detail": "Paper Plate Manufacturing"
+        },
+        {
+          "label": "Paper Plate dashboard identical to when first analysed",
+          "ok": true
+        },
+        {
+          "label": "Opening EV Charging Station shows its analysis",
+          "ok": true,
+          "detail": "EV Charging Station"
+        }
+      ],
+      "startedAt": 1790531424852,
+      "ms": 4382
+    },
+    {
+      "id": "D",
+      "name": "Data persists across browser refresh",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "After refresh, dashboard still shows saved analysis",
+          "ok": true,
+          "detail": "EV Charging Station"
+        },
+        {
+          "label": "Both ideas still listed after refresh",
+          "ok": true,
+          "detail": "EV Charging Station | Paper Plate Manufacturing"
+        },
+        {
+          "label": "Saved in the database (visible from a brand-new browser session)",
+          "ok": true,
+          "detail": "EV Charging Station | Paper Plate Manufacturing"
+        }
+      ],
+      "startedAt": 1790531429235,
+      "ms": 4825
+    },
+    {
+      "id": "X2",
+      "name": "Other pages work with the current business",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "/market renders for current business",
+          "ok": true,
+          "detail": "MARKET SCANNER Market for EV Charging Station Demand, opportunity and local factors in Kanpur, Uttar Pradesh, India. All market figures are AI estimates. Demand"
+        },
+        {
+          "label": "/what-if renders for current business",
+          "ok": true,
+          "detail": "WHAT-IF SIMULATOR What if… · EV Charging Station Baseline = AI-estimated unit economics for this business. Move the sliders to see results recalculate instantly"
+        },
+        {
+          "label": "/stress-test renders for current business",
+          "ok": true,
+          "detail": "BUSINESS STRESS TEST How resilient is EV Charging Station? Each scenario applies a shock to the AI-estimated baseline and recalculates revenue, expenses, profit"
+        },
+        {
+          "label": "/competitors renders for current business",
+          "ok": true,
+          "detail": "COMPETITOR WAR ROOM Competition for EV Charging Station Competitor profiles below are AI assumptions about typical businesses of each type. Nearby businesses ar"
+        },
+        {
+          "label": "/reports renders for current business",
+          "ok": true,
+          "detail": "REPORTS Report · EV Charging Station A complete, printable validation report for the currently selected business. Download PDF Print Share STARTUP SENSE · AI BU"
+        },
+        {
+          "label": "Download PDF produces a PDF file",
+          "ok": true,
+          "detail": "3129199 bytes"
+        },
+        {
+          "label": "Share creates a read-only link",
+          "ok": true,
+          "detail": "https://startup-sense-ai.netlify.app/share/76a7f868811328e35de4aead3caaec2c6ca0"
+        },
+        {
+          "label": "Shared link opens report without workspace key",
+          "ok": true
+        },
+        {
+          "label": "What-if results change when price changes",
+          "ok": true
+        },
+        {
+          "label": "Pivot generator returns AI pivots",
+          "ok": true,
+          "detail": "5 pivots"
+        }
+      ],
+      "startedAt": 1790531434060,
+      "ms": 50075
+    },
+    {
+      "id": "E",
+      "name": "AI failure shows an error, never sample data",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Error message shown: 'AI analysis could not be completed.'",
+          "ok": true,
+          "detail": "{\"outcome\":\"failed\",\"url\":\"https://startup-sense-ai.netlify.app/analyzing/8351b413-41f6-4e3c-83f8-6f8d9098b3c0?analysisId=0215e646-9259-4539-bd8a-7c0574bd68f5\",\"seconds\":4.009,\"body\":\"REAL AI ANALYSIS\\nFailure Test Bakery\\n\\nKanpur, India · Budget INR 10,000\\n\\nAI analysis could not be completed.\\nNo results were generated, and no sample data is shown in their place. Your idea and inputs are saved"
+        },
+        {
+          "label": "Retry Analysis + Back to New Idea buttons shown",
+          "ok": true
+        },
+        {
+          "label": "No results or sample data displayed",
+          "ok": true
+        },
+        {
+          "label": "Dashboard keeps the last successful analysis (not the failed one)",
+          "ok": true,
+          "detail": "EV Charging Station"
+        },
+        {
+          "label": "Failure-test idea deleted, others kept",
+          "ok": true,
+          "detail": "EV Charging Station | Paper Plate Manufacturing"
+        }
+      ],
+      "startedAt": 1790531484136,
+      "ms": 10385
+    },
+    {
+      "id": "L1",
+      "name": "Language switching + persists after refresh",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Hindi interface (sidebar in Devanagari)",
+          "ok": true,
+          "detail": "STARTUP SENSE\nअपना पैसा लगाने से पहले जाँचें।\nडैशबोर्ड\nनया आइडिया\nमेरे आइडिया\nविश्लेषण\nमार्केट स्कैनर\nग्राहक पुष्टि\nवित्"
+        },
+        {
+          "label": "Hindi still selected after refresh",
+          "ok": true
+        },
+        {
+          "label": "Hinglish interface",
+          "ok": true,
+          "detail": "STARTUP SENSE\nPaisa lagane se pehle validate karein.\nDashboard\nNaya Idea\nMere Ideas\nANALYSIS\nMarket Scanner\nCustomer Val"
+        },
+        {
+          "label": "Back to English",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790531494997,
+      "ms": 1519
+    },
+    {
+      "id": "V1",
+      "name": "No voice feature anywhere + typed English idea (new idea: rooftop microgreens)",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "No mic / voice / read-aloud UI on New Idea",
+          "ok": true,
+          "detail": "{\"els\":0,\"text\":false}"
+        },
+        {
+          "label": "Voice extraction endpoint removed",
+          "ok": true,
+          "detail": "404"
+        },
+        {
+          "label": "Button reads ANALYZE BUSINESS IDEA",
+          "ok": true
+        },
+        {
+          "label": "Typed fields keep their values",
+          "ok": true
+        },
+        {
+          "label": "Real analysis completed",
+          "ok": true,
+          "detail": "{\"outcome\":\"complete\",\"seconds\":212.224}"
+        },
+        {
+          "label": "Dashboard shows the typed idea",
+          "ok": true
+        },
+        {
+          "label": "Dashboard location = Indore",
+          "ok": true
+        },
+        {
+          "label": "Analysis is about microgreens (not a template)",
+          "ok": true
+        },
+        {
+          "label": "No read-aloud button on dashboard",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790531496517,
+      "ms": 215797
+    },
+    {
+      "id": "H",
+      "name": "Hindi typed idea → analysis generated in Hindi",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Real analysis completed",
+          "ok": true,
+          "detail": "{\"outcome\":\"complete\",\"seconds\":212.218}"
+        },
+        {
+          "label": "AI summary written in Devanagari",
+          "ok": true,
+          "detail": "यह व्यवसाय लखनऊ में छोटे स्तर पर ताजे बकरी के दूध और कोल्ड-प्रोसेस्ड तकनीक से प्रीमियम हर्बल साबुन बनाने का है। आसपास के ग्रामीण क्षेत्रों से आसानी से शुद्ध बकर"
+        },
+        {
+          "label": "Dashboard labels in Hindi",
+          "ok": true
+        },
+        {
+          "label": "Business is the goat-milk soap idea",
+          "ok": true
+        },
+        {
+          "label": "Market analysis text in Hindi",
+          "ok": true,
+          "detail": "मार्केट स्कैनर बकरी के दूध से हर्बल साबुन बनाना का बाज़ार लखनऊ, उत्तर प्रदेश, India में माँग, अवसर और स्थानीय कारक। बाज़ार के सभी आँकड़े AI अनुमान हैं। माँग AI "
+        },
+        {
+          "label": "No language-mismatch banner (analysis matches UI)",
+          "ok": true
+        },
+        {
+          "label": "No read-aloud button",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790531712724,
+      "ms": 219440
+    },
+    {
+      "id": "G",
+      "name": "Hinglish typed idea → Hinglish analysis (new idea: drone crop spraying)",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Hinglish form labels",
+          "ok": true
+        },
+        {
+          "label": "Real analysis completed",
+          "ok": true,
+          "detail": "{\"outcome\":\"complete\",\"seconds\":218.202}"
+        },
+        {
+          "label": "Summary is Roman script (no Devanagari)",
+          "ok": true,
+          "detail": "Yeh business rural Kanpur ke kisaano ko modern agriculture drone ke zariye kam time mein behtar dawai chhidakne ki service dega. ₹3,000,000 ke budget mein ek commercial agricultural drone aur transpor"
+        },
+        {
+          "label": "Summary is Hindi grammar (Hinglish words)",
+          "ok": true,
+          "detail": "Yeh business rural Kanpur ke kisaano ko modern agriculture drone ke zariye kam time mein behtar dawai chhidakne ki service dega. ₹3,000,000 ke budget mein ek commercial agricultural drone aur transpor"
+        }
+      ],
+      "startedAt": 1790531932164,
+      "ms": 221678
+    },
+    {
+      "id": "X4",
+      "name": "My Ideas lists every analysis (all languages)",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "Paper plate + EV still present",
+          "ok": true,
+          "detail": "Drone se kheton mein dawai chhidakne ki service | बकरी के दूध से हर्बल साबुन बनाना | Rooftop hydroponic microgreens farm | EV Charging Station | Paper Plate Manufacturing"
+        },
+        {
+          "label": "English + Hindi + Hinglish ideas saved",
+          "ok": true,
+          "detail": "Drone se kheton mein dawai chhidakne ki service | बकरी के दूध से हर्बल साबुन बनाना | Rooftop hydroponic microgreens farm | EV Charging Station | Paper Plate Manufacturing"
+        },
+        {
+          "label": "English analysis + Hindi UI → offer to re-analyze in Hindi",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790532153843,
+      "ms": 4563
+    },
+    {
+      "id": "X3",
+      "name": "Mobile layout",
+      "status": "passed",
+      "checks": [
+        {
+          "label": "No horizontal overflow on phone width",
+          "ok": true
+        }
+      ],
+      "startedAt": 1790532158411,
+      "ms": 2166
+    }
+  ],
+  "consoleErrors": [
+    "https://startup-sense-ai.netlify.app/ :: Failed to load resource: the server responded with a status of 401 ()",
+    "https://startup-sense-ai.netlify.app/ :: Failed to load resource: the server responded with a status of 400 ()"
+  ],
+  "data": {
+    "R_phone": {
+      "url": "https://startup-sense-ai.netlify.app/new",
+      "hasForm": true,
+      "bodyText": "Language\nEnglish\nहिंदी\nHinglish\nANALYZE NEW IDEA\nTell us about your business idea\n\nYour inputs are sent to a real AI model on our server. It analyses your specific idea, location and budget — nothing ",
+      "errs": []
+    },
+    "R_desktop": {
+      "url": "https://startup-sense-ai.netlify.app/new",
+      "hasForm": true,
+      "bodyText": "STARTUP SENSE\nValidate Before You Invest.\nDashboard\nNew Idea\nMy Ideas\nANALYSIS\nMarket Scanner\nCustomer Validation\nFinancial Planner\nSupply Chain & Sources\nCompetitor War Room\nSCENARIOS\nWhat-If Simulat",
+      "errs": []
+    },
+    "A_run": {
+      "outcome": "complete",
+      "url": "https://startup-sense-ai.netlify.app/analyzing/f218853c-f84a-4136-a18a-13400d900170?analysisId=9fd1b2cd-284d-48b8-8d36-ba7f4dc3e6f4",
+      "seconds": 198.178,
+      "stagesSeen": [
+        "Understanding business idea",
+        "Analyzing competition",
+        "Identifying raw materials",
+        "Finding nearby sources",
+        "Preparing report"
+      ]
+    },
+    "A": {
+      "dashboardName": "Paper Plate Manufacturing",
+      "dashboard": "Product Disposable Paper Packaging & Tableware Manufacturing AI brand idea: Kanpur EcoPlates Analysed 27 Sept 2026 Paper Plate Manufacturing This business involves setting up a low-cost, manual or semi-automatic single-die paper plate making setup in Kanpur to supply everyday single-use paper disposables. Given the tight budget of ₹50,000, operations will start as a micro-enterprise sourcing raw paper rolls/blanks locally and operating out of a residential or small rented workshop. The focus will be on quick cash turnaround through daily or weekly supply runs to dense street food clusters across Kanpur's busy commercial markets. Kanpur, Uttar Pradesh, India Budget ₹50,000 Input Restaurants, caterers and food vendors 5.9 / 10 AI VALIDATION SCORE Needs work Go with changes AI Estimate MARKET DEMAND AI Estimate High Kanpur has a massive unorganised street food sector and high tea/snack consumption culture, paired with strict enforcement against single-use plastic, creating steady daily recurring demand for paper disposables. MARKET OPPORTUNITY AI Estimate Moderate growth ₹15–25 crore/yr in Kanpur urban area COMPETITION AI Estimate High The paper plate market in Kanpur is heavily saturated with unorganised small-scale manufacturers and wholesale traders operating out of areas like Nayaganj and Generalganj. Competition is driven primarily by low unit pricing and credit terms extended to vendors, making differentiation difficult on price alone. ESTIMATED INVESTMENT AI Estimate ₹50,000 Within your budget of ₹50,000 EST. MONTHLY REVENUE Calculated ₹43,680 ₹28 × 60 pack of 50 plates/day × 26 days (AI drivers) EST. MONTHLY PROFIT Calculated ₹4,980 Margin 11.4% BREAK-EVEN Calculated 10.0 months Needs ~938 pack of 50 plates/month to cover fixed costs NEARBY SOURCES FOUND Live listing 0 Within 50 km · OpenStreetMap AI Recommendation AI Estimate Go with changes Proceed with a lean, single-die micro-unit focusing strictly on direct cash-and-carry sales to local food vendors. This business idea is entirely feasible within the 50,000 INR budget if executed as a micro-enterprise with the founder operating the machine. Kanpur's vast street food culture ensures a steady, recurring need for disposable plates. However, slim profit margins and potential credit delays require strict financial discipline. Success depends on maintaining low overheads, executing aggressive direct field sales, and avoiding long credit cycles with vendors. KEY ACTIONS 1. Set up the single-die machine in a low-rent domestic space to eliminate commercial real estate costs 2. Source raw kraft paper directly from Kanpur wholesale markets in Fazalganj or Generalganj 3. Target local street food vendors and small caterers with direct doorstep sample drops 4. Enforce strict cash-on-delivery terms to protect limited working capital 5. Personally manage production and local deliveries to keep operating expenses minimal CONDITIONS FOR SUCCESS • The founder must operate the machinery personally to avoid labor expenses during the initial phase • Raw material procurement costs must remain stable within estimated wholesale limits • Vendors must adhere to cash or short-term weekly credit terms without extended defaults Score breakdown Weighted AI component scores AI Estimate Market demand 8.0 Market opportunity 6.0 Competitive position 4.0 Profitability 5.0 Budget feasibility 7.0 Risk (higher = safer) 5.0 SWOT For Paper Plate Manufacturing in Kanpur AI Estimate Strengths • Extremely low initial setup cost fitting the 50000 INR budget • High daily recurring demand from Kanpur's massive street food sector • Proximity to regional raw material suppliers in Uttar Pradesh • Simple manufacturing process requiring minimal skill Weaknesses • Low profit margins per unit leave little room for error • High dependence on manual or semi-automatic machine speed • Working from a small setup limits daily output capacity • Vulnerability to raw material paper price fluctuations Opportunities • Expanding supply to surrounding rural markets and village wedding caterers • Introducing heavy-duty laminated plates for wet curry items • Partnering directly with large-scale local bhandara and event organizers • Scaling up to fully automatic multi-die machinery as profits accumulate Threats • Aggressive price undercutting by large regional manufacturers • Sudden spike in kraft paper roll and PE film costs • Local municipal crackdowns or shifting environmental regulations • Vendor defaults on weekly credit payments Monthly economics Steady-state month Calculated Revenue Expenses Profit ₹0 ₹15,000 ₹30,000 ₹45,000 ₹60,000 Open Financial Planner Nearest suppliers Live listings sorted by distance Competitor War Room Nearby similar businesses Stress test Demand & cost shocks Full report Download PDF · Print · Share All figures and assessments are AI estimates generated from your inputs. They are not verified real-world data. Validate with real customers, suppliers and local experts before investing. Analyze another idea",
+      "dashboardShot": "A-dashboard.png",
+      "materials": [
+        "Single die semi-automatic paper plate machine",
+        "Kraft paper rolls and PE coating",
+        "Cutting dies (different sizes)",
+        "Packaging covers and bundling tape"
+      ],
+      "suppliers": [],
+      "suppliersPage": "SMART SUPPLY CHAIN FINDER Supply chain for Paper Plate Manufacturing Materials identified by AI for this business, and the nearest real sources to Kanpur, Uttar Pradesh, India from live map data. Required raw materials & resources Procuring raw kraft paper rolls, PE coating sheets, and a single-die semi-automatic machine locally within Kanpur wholesale markets to stay within the 50,000 INR budget. Identified by AI Single die semi-automatic paper plate machine Equipment Hand-operated or motorized single-die machine capable of pressing standard disposable paper plates. Qty: 1 unit Est. cost: 25000 INR (AI Estimate) 0 live sources found Kraft paper rolls and PE coating Raw material Pre-cut or roll-form paper stock with polyethylene coating for food-grade liquid resistance. Qty: 300 kg Est. cost: 15000 INR (AI Estimate) 0 live sources found Cutting dies (different sizes) Component Interchangeable metal dies for producing various plate diameters (e.g., 7-inch, 10-inch). Qty: 2 units Est. cost: 3000 INR (AI Estimate) 0 live sources found Packaging covers and bundling tape Packaging Transparent LDPE plastic wrap to bundle finished plates into packs of 50. Qty: 50 kg Est. cost: 2000 INR (AI Estimate) 0 live sources found Nearest raw material sources 0 live listings within 50 km · Sources: OpenStreetMap · radius widened automatically 5 km 10 km 20 km 25 km 40 km 50 km 60 km Search again Listings come from OpenStreetMap. Many small Indian suppliers are not mapped with phone numbers — add a Google Places key in Settings for richer contact data. + − Leaflet | © OpenStreetMap contributors Filters Max distance: 50 km Supplier type All types Manufacturers (0) Factories (0) Raw Material Suppliers (0) Wholesalers (0) Distributors (0) Dealers (0) Unclassified (0) Raw material All materials Single die semi-automatic paper plate machine Kraft paper rolls and PE coating Cutting dies (different sizes) Packaging covers and bundling tape Price No verified price data Sources don’t publish prices. Request quotes directly. Minimum rating (no verified ratings) Any 3+ 3.5+ 4+ 4.5+ Open now only (not verified) Sort by Nearest Best Match Lowest Price Showing 0 of 0 sources · nearest first No matching suppliers were found in live map data for this area. Where else to look AI-generated pointers — these are not live listings. Use the search links to find real businesses on Google Maps. AI-suggested source — verify before purchasing Industrial area: Fazalganj Industrial Estate for machinery and industrial components Wholesale market: Generalganj and Halsey Road for paper rolls and packaging materials Commercial hub: Nayaganj market for raw material suppliers and dealers Search “Single die semi-automatic paper plate machine” on Google Maps Search “Kraft paper rolls and PE coating” on Google Maps Search “Cutting dies (different sizes)” on Google Maps Search “Packaging covers and bundling tape” on Google Maps",
+      "suppliersShot": "A-suppliers.png",
+      "customers": "CUSTOMER VALIDATION Who buys from Paper Plate Manufacturing? AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest. Primary customers AI Estimate Street Food & Chaat Vendors Daily vendors selling samosas, chaat, momos, and street meals in high-traffic Kanpur markets needing durable, grease-resistant small plates. Willingness to pay: ₹0.25 to ₹0.50 per plate depending on GSM and size. Small Dhabas & Fast Food Outlets Budget eateries needing medium-to-large sectioned plates or heavy plates for sit-down and takeaway meals. Willingness to pay: ₹0.60 to ₹1.20 per plate for heavier laminated or partitioned varieties. Secondary customers AI Estimate Event Caterers & Bhandara Organisers Local event managers and religious trusts requiring bulk deliveries of hundreds of packs at short notice. Willingness to pay: ₹0.40 to ₹0.90 per plate based on volume discount. Kirana & General Stores Local neighbourhood retail shops purchasing pre-packed 50-piece retail sets for domestic household use. Willingness to pay: ₹20 to ₹35 per pack of 50 units. Customer needs AI Estimate Low per-unit purchase cost to protect thin food profit margins. Grease and moisture resistance without immediate soaking or bending. Consistent size and shape fitting standard portion sizes. Reliable on-demand local delivery so vendors do not tie up working capital in excess stock. Buying factors Importance 1–5 AI Estimate 0 1 2 3 4 5 Price per unit /Bundle wholesalerate Oil and gravyresistance(rigidity/GSM) Consistency ofsupply & doorstepdelivery Credit terms /Payment flexibility Customer acquisition ideas AI Estimate Direct foot-canvassing and free sample drops to chaat clusters in Gumti No. 5, Kalyanpur, and Parade grounds. Offering a 'starter bundle' (e.g., 500 plates) with a free trial batch of 50 plates for immediate quality testing. Supplying small unbranded local disposable packaging wholesalers in Nayaganj market at a competitive cash-and-carry margin. Partnering with local tent house and halwai networks for direct bulk orders during the wedding season. Validation interview checklist Ask these to at least 10 real prospective customers. Progress: 0/7 asked. Saved in this browser. Your tracking How many disposable plates or bowls do you consume daily, and what exact size/depth do you use most? What is your current purchase price per 100-piece pack, and where do you buy them from? Do your current plates get soggy or bend when serving hot oily items or wet curries? What payment terms do you currently get (cash on delivery, weekly credit, advance)? If a local maker supplies equivalent or better rigidity plates at ₹0.05 cheaper per piece with doorstep drop, would you switch tomorrow? How much stock do you keep at a time, and does running out of stock interrupt your daily operations? Which material do your customers prefer: silver craft paper, plain white duplex board, or banana/leaf lookalike paper? Low-cost validation experime",
+      "financial": "FINANCIAL PLANNER Unit economics · Paper Plate Manufacturing Pre-filled with AI estimates for this business. Change any value to see recalculated results. Sales unit: “pack of 50 plates”. Legend: User Input value you changed · AI Estimate AI-estimated default · Calculated formula result Inputs Investment AI Estimate Selling price / unit AI Estimate Customers per day (pack of 50 plates) AI Estimate Working days / month AI Estimate Variable cost / unit AI Estimate Fixed costs / month AI Estimate Marketing budget / month AI Estimate DAILY REVENUE Calculated ₹1,680 MONTHLY REVENUE Calculated ₹43,680 MONTHLY EXPENSES Calculated ₹38,700 ₹31,200 variable + ₹7,500 fixed & marketing MONTHLY PROFIT Calculated ₹4,980 PROFIT MARGIN Calculated 11.4% BREAK-EVEN Calculated 10.0 months ≈ 37 pack of 50 plates/day to cover monthly fixed costs 24-month cumulative cash position Starts at minus the investment; first 3 months ramp from 50% to 100% of steady-state sales. Calculated M0 M3 M6 M9 M12 M15 M18 M21 M24 -₹70,000 -₹35,000 ₹0 ₹35,000 ₹70,000 Break-even M14 Cumulative cash : ₹10,360 Investment breakdown AI Estimate Single die semi-automatic paper plate machine ₹25,000 Initial raw material rolls and dies ₹18,000 Transport, installation and miscellaneous tools ₹4,000 Working capital reserve ₹3,000 Total ₹50,000 Monthly fixed costs AI Estimate Workshop space rent (home garage or small shed) ₹3,000 Electricity and maintenance ₹1,500 Local transport and delivery ₹2,000 Total ₹6,500 Marketing budget (AI): ₹1,000/month Variable cost per unit AI Estimate Kraft paper rolls and PE coating ₹17 Packaging covers and bundling tape ₹3 Total ₹20 AI assumptions behind these numbers AI Estimate Operations start from a low-rent domestic workshop or small shed to save on real estate costs. The entrepreneur operates the machine personally to avoid initial labour salary costs. Sales are conducted on a cash or short-term weekly credit basis to maintain cash flow. Raw materials are procured locally in Kanpur to minimize freight charges. Production scales gradually to 60 packs per day over the first six months.",
+      "financialShot": "A-financial.png",
+      "competitors": "COMPETITOR WAR ROOM Competition for Paper Plate Manufacturing Competitor profiles below are AI assumptions about typical businesses of each type. Nearby businesses are real listings from live map data, matched by keywords — confirm what they actually sell. Competition level AI Estimate High The paper plate market in Kanpur is heavily saturated with unorganised small-scale manufacturers and wholesale traders operating out of areas like Nayaganj and Generalganj. Competition is driven primarily by low unit pricing and credit terms extended to vendors, making differentiation difficult on price alone. Competitive factors AI Estimate Price per pack Paper GSM and oil resistance Reliability of delivery Credit availability Differentiation opportunities AI Estimate Doorstep direct delivery for small street vendors who cannot visit wholesale markets Guaranteed use of virgin craft paper for better oil resistance Custom bundle sizes for small events Consistent thickness verification Direct competitor types Typical players — not specific named companies. AI Assumption COMPETITOR TYPE PRODUCTS / SERVICES TYPICAL PRICING STRENGTHS WEAKNESSES Local Small-Scale Manufacturers Micro-units using 1 to 2 semi-automatic pedal or motorized single-die machines installed in residential workshops. Rs 25 to Rs 30 per pack of 50 pieces AI assumption + Low overhead costs + Direct supply to neighbourhood vendors + Flexible batch sizes − Inconsistent paper GSM quality − Limited financial capital − Prone to machine breakdowns Wholesale Paper Goods Traders Traders in Kanpur wholesale markets who source large volumes from neighboring industrial hubs and resell to retailers. Rs 22 to Rs 27 per pack of 50 pieces AI assumption + Wide variety of sizes and materials + High volume availability + Established credit relationships with retailers − High transport costs for vendors coming to markets − Less willingness to offer small custom orders − Lower profit margins for direct makers INDIRECT COMPETITORS Plastic and Thermocol Plate Sellers Sellers offering cheap plastic or banned thermocol plates clandestinely despite municipal bans. Disposable Leaf Plate (Sal/Areca) Suppliers Vendors supplying eco-friendly natural leaf plates which cater to premium street food outlets and religious events. Nearby similar businesses (0) Real listings within 15 km matching: paper plate, disposable, packing material, shop=wholesale, shop=houseware, industrial=light. Sources: OpenStreetMap 5 km 10 km 15 km 25 km 40 km Search These are real businesses found near your location by name/category match. Whether each one is a direct competitor is not verified — check before drawing conclusions. No similar businesses were found in live map data within this radius. That may mean low local competition — or simply that local businesses aren’t mapped. Verify on the ground."
+    },
+    "B_run": {
+      "outcome": "complete",
+      "url": "https://startup-sense-ai.netlify.app/analyzing/52f800f2-8df2-4fe2-b235-2a544ed333e5?analysisId=341a114e-0095-44a3-af51-8229b126be4c",
+      "seconds": 230.195,
+      "stagesSeen": [
+        "Understanding business idea",
+        "Analyzing competition",
+        "Identifying raw materials",
+        "Finding nearby sources",
+        "Preparing report"
+      ]
+    },
+    "B": {
+      "dashboardName": "EV Charging Station",
+      "dashboard": "Service Electric Vehicle Charging Infrastructure AI brand idea: Kanpur EV PowerHub Analysed 27 Sept 2026 EV Charging Station Kanpur EV PowerHub is a localized charging station designed to cater to the rising adoption of electric two-wheelers and commercial three-wheelers in industrial Uttar Pradesh. Located strategically near high-traffic transit nodes, it provides reliable energy top-ups to address range anxiety. With a modest starting budget, the station focuses on fast DC charging for e-rickshaws and AC charging for bikes, operating on a pay-per-use digital and cash model. Kanpur, Uttar Pradesh, India Budget ₹5,00,000 Input E-rickshaw drivers, electric two-wheeler commuters, and commercial EV fleet operators in Kanpur. 6.9 / 10 AI VALIDATION SCORE Promising Go with changes AI Estimate MARKET DEMAND AI Estimate Moderate Demand for EV charging is growing steadily in Kanpur, primarily driven by the massive fleet of e-rickshaws and an increasing number of electric delivery scooters. MARKET OPPORTUNITY AI Estimate High growth ₹15–25 crore/yr in Kanpur urban district COMPETITION AI Estimate Low The public EV charging market in Kanpur is in its early stages. Competition mainly comes from unorganized charging points like home sockets used by neighbors, local mechanic shops offering makeshift charging for e-rickshaws, and a very limited number of fuel-station DC fast chargers. ESTIMATED INVESTMENT AI Estimate ₹5 L Within your budget of ₹5,00,000 EST. MONTHLY REVENUE Calculated ₹1.35 L ₹18 × 250 kWh charged/day × 30 days (AI drivers) EST. MONTHLY PROFIT Calculated ₹25,000 Margin 18.5% BREAK-EVEN Calculated 20.0 months Needs ~4,375 kWh charged/month to cover fixed costs NEARBY SOURCES FOUND Live listing 7 Within 20 km · OpenStreetMap AI Recommendation AI Estimate Go with changes Proceed with a lean setup focused on e-rickshaws, ensuring strict prepaid cash or digital collections. Kanpur EV PowerHub addresses a genuine need for localized charging infrastructure among the city's vast e-rickshaw and two-wheeler fleet. With a 500,000 INR budget, you can set up a modest two-point station by keeping civil and equipment costs lean. However, success depends heavily on securing a stable commercial power connection and managing high grid electricity costs. You must rely strictly on prepaid models to avoid cash flow bottlenecks from daily commuters. KEY ACTIONS 1. Secure a reliable commercial power sanction from KESCO before purchasing hardware 2. Negotiate a low-rent corner space with an existing petrol pump or commercial plot 3. Implement a strict prepaid digital or cash collection model for all charging sessions 4. Establish direct relationships with local e-rickshaw union leaders to secure captive daily traffic 5. Install heavy-duty surge protectors to safeguard equipment against Kanpur's voltage fluctuations CONDITIONS FOR SUCCESS • Commercial electricity tariff remains at or near estimated levels without sudden punitive spikes • Daily vehicle throughput meets or exceeds the baseline estimate of 250 kWh consumed • Local grid reliability is sufficient to avoid prolonged daily downtime Score breakdown Weighted AI component scores AI Estimate Market demand 8.0 Market opportunity 7.0 Competitive position 8.0 Profitability 6.0 Budget feasibility 7.0 Risk (higher = safer) 5.0 SWOT For EV Charging Station in Kanpur AI Estimate Strengths • Low initial capital requirement for setting up slow AC and basic fast chargers within a 500000 INR budget • High local demand driven by a massive concentration of e-rickshaws in Kanpur • First-mover advantage in underserved micro-markets and transit nodes • Low operating overheads once the grid connection is secured Weaknesses • Vulnerability to frequent local power cuts and voltage fluctuations in Kanpur • Limited budget restricts installation to low-capacity chargers rather than heavy-duty DC ultra-fast hubs • Low standalone brand awareness initially • Dependence on commercial electricity tariff rates set by the state discom Opportunities • Partnering with local e-rickshaw driver unions to secure captive daily traffic • Adding minor revenue streams like a small tea/snacks stall or battery repair service • Future integration of rooftop solar panels to offset high grid power costs • Leveraging state government EV policy subsidies and grants Threats • Potential hikes in commercial electricity tariffs by the state electricity board • Aggressive expansion by large corporate EV charging networks into Kanpur • Risk of equipment vandalism or power theft in poorly lit areas • Unpredictable local municipal road construction disrupting access Monthly economics Steady-state month Calculated Revenue Expenses Profit ₹0 ₹35,000 ₹70,000 ₹1.05 L ₹1.4 L Open Financial Planner Nearest suppliers Live listings sorted by distance Competitor War Room Nearby similar businesses Stress test Demand & cost shocks Full report Download PDF · Print · Share All figures and assessments are AI estimates generated from your inputs. They are not verified real-world data. Validate with real customers, suppliers and local experts before investing. Analyze another idea",
+      "dashboardShot": "B-dashboard.png",
+      "materials": [
+        "AC and DC EV Chargers",
+        "Heavy-Duty Electrical Cables and Wiring",
+        "Surge Protection Devices and Circuit Breakers",
+        "Canopy and Structural Shed Materials"
+      ],
+      "suppliers": [
+        {
+          "name": "Shivam Enterprises ELectrical and Electronics stores",
+          "distance": "4.1 km away",
+          "text": "1Shivam Enterprises ELectrical and Electronics storesLive listing · OpenStreetMap4.1 km away(straight-line from your location)Raw Material SuppliersKidwai NagarShivam Enterprises ELectrical and Electronics stores, Vrindawan lane, Kidwai Nagar, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, IndiaPhone not listedEmail not listedWebsite not listedHours not listedContact information not availableRelevan",
+          "links": [
+            "https://www.google.com/maps/search/?api=1&query=26.4238062,80.3223992",
+            "https://www.google.com/maps/dir/?api=1&origin=26.4609135,80.3217588&destination=26.4238062,80.3223992",
+            "https://www.openstreetmap.org/node/10959672163"
+          ]
+        },
+        {
+          "name": "R.K.Electric",
+          "distance": "4.3 km away",
+          "text": "2R.K.ElectricLive listing · OpenStreetMap4.3 km away(straight-line from your location)ManufacturersNaubastaR.K.Electric, Hamirpur Road, Naubasta, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, IndiaPhone not listedEmail not listedWebsite not listedHours not listedContact information not availableRelevant for:AC and DC EV Chargers· name mentions \"electric\"Price: not listed by source — request a quote",
+          "links": [
+            "https://www.google.com/maps/search/?api=1&query=26.4222897,80.3197405",
+            "https://www.google.com/maps/dir/?api=1&origin=26.4609135,80.3217588&destination=26.4222897,80.3197405",
+            "https://www.openstreetmap.org/node/10959672187"
+          ]
+        },
+        {
+          "name": "Electric Substation No 6",
+          "distance": "9.6 km away",
+          "text": "3Electric Substation No 6Live listing · OpenStreetMap9.6 km away(straight-line from your location)KanpurElectric Substation No 6, Lane 11, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, IndiaPhone not listedEmail not listedWebsite not listedHours not listedContact information not availableRelevant for:AC and DC EV Chargers· name mentions \"electric\"Price: not listed by source — request a quote. View ",
+          "links": [
+            "https://www.google.com/maps/search/?api=1&query=26.5099742,80.2425939",
+            "https://www.google.com/maps/dir/?api=1&origin=26.4609135,80.3217588&destination=26.5099742,80.2425939",
+            "https://www.openstreetmap.org/way/1154890624"
+          ]
+        },
+        {
+          "name": "EV charging station",
+          "distance": "9.7 km away",
+          "text": "4EV charging stationLive listing · OpenStreetMap9.7 km away(straight-line from your location)KanpurEV charging station, Lane 11, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, IndiaPhone not listedEmail not listedWebsite not listedHours not listedContact information not availableRelevant for:AC and DC EV Chargers· name mentions \"charging\"Price: not listed by source — request a quote. View on Google ",
+          "links": [
+            "https://www.google.com/maps/search/?api=1&query=26.509926,80.2407413",
+            "https://www.google.com/maps/dir/?api=1&origin=26.4609135,80.3217588&destination=26.509926,80.2407413",
+            "https://www.openstreetmap.org/way/1150599656"
+          ]
+        },
+        {
+          "name": "Electric Substation No 5",
+          "distance": "10.5 km away",
+          "text": "5Electric Substation No 5Live listing · OpenStreetMap10.5 km away(straight-line from your location)KanpurElectric Substation No 5, Hall 4 - Hall 7 Cross, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, IndiaPhone not listedEmail not listedWebsite not listedHours not listedContact information not availableRelevant for:AC and DC EV Chargers· name mentions \"electric\"Price: not listed by source — request",
+          "links": [
+            "https://www.google.com/maps/search/?api=1&query=26.5074582,80.229747",
+            "https://www.google.com/maps/dir/?api=1&origin=26.4609135,80.3217588&destination=26.5074582,80.229747",
+            "https://www.openstreetmap.org/way/376451965"
+          ]
+        },
+        {
+          "name": "Electric Substation No 1",
+          "distance": "10.7 km away",
+          "text": "6Electric Substation No 1Live listing · OpenStreetMap10.7 km away(straight-line from your location)KanpurElectric Substation No 1, 62nd Street, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, IndiaPhone not listedEmail not listedWebsite not listedHours not listedContact information not availableRelevant for:AC and DC EV Chargers· name mentions \"electric\"Price: not listed by source — request a quote. ",
+          "links": [
+            "https://www.google.com/maps/search/?api=1&query=26.5120407,80.2303891",
+            "https://www.google.com/maps/dir/?api=1&origin=26.4609135,80.3217588&destination=26.5120407,80.2303891",
+            "https://www.openstreetmap.org/way/1158746039"
+          ]
+        },
+        {
+          "name": "Electric Substation No 12",
+          "distance": "10.9 km away",
+          "text": "7Electric Substation No 12Live listing · OpenStreetMap10.9 km away(straight-line from your location)KanpurElectric Substation No 12, 6th Avenue, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, IndiaPhone not listedEmail not listedWebsite not listedHours not listedContact information not availableRelevant for:AC and DC EV Chargers· name mentions \"electric\"Price: not listed by source — request a quote.",
+          "links": [
+            "https://www.google.com/maps/search/?api=1&query=26.5148797,80.2304015",
+            "https://www.google.com/maps/dir/?api=1&origin=26.4609135,80.3217588&destination=26.5148797,80.2304015",
+            "https://www.openstreetmap.org/way/1135339284"
+          ]
+        }
+      ],
+      "suppliersPage": "SMART SUPPLY CHAIN FINDER Supply chain for EV Charging Station Materials identified by AI for this business, and the nearest real sources to Kanpur, Uttar Pradesh, India from live map data. Required raw materials & resources Procuring reliable EV chargers, electrical components, and heavy-duty wiring to build a secure, grid-compliant charging station in Kanpur within the budget. Identified by AI AC and DC EV Chargers Equipment Dual-gun chargers suitable for electric two-wheelers and e-rickshaws. Qty: 2 units Est. cost: 250000 INR (AI Estimate) 7 live sources found Heavy-Duty Electrical Cables and Wiring Component High-capacity armored copper cables for power distribution from the main grid. Qty: 50 meters Est. cost: 50000 INR (AI Estimate) 1 live source found Surge Protection Devices and Circuit Breakers Component Protection gear to safeguard charging hardware against voltage fluctuations and lightning. Qty: 1 set Est. cost: 20000 INR (AI Estimate) 1 live source found Canopy and Structural Shed Materials Raw material Metal roofing sheets and support poles to protect vehicles and chargers from rain and sun. Qty: 1 unit Est. cost: 50000 INR (AI Estimate) 0 live sources found Nearest raw material sources 7 live listings within 20 km · Sources: OpenStreetMap 5 km 10 km 20 km 25 km 40 km 50 km 60 km Search again Listings come from OpenStreetMap. Many small Indian suppliers are not mapped with phone numbers — add a Google Places key in Settings for richer contact data. + − Leaflet | © OpenStreetMap contributors Filters Max distance: 20 km Supplier type All types Manufacturers (1) Factories (0) Raw Material Suppliers (1) Wholesalers (0) Distributors (0) Dealers (0) Unclassified (5) Raw material All materials AC and DC EV Chargers Heavy-Duty Electrical Cables and Wiring Surge Protection Devices and Circuit Breakers Canopy and Structural Shed Materials Price No verified price data Sources don’t publish prices. Request quotes directly. Minimum rating (no verified ratings) Any 3+ 3.5+ 4+ 4.5+ Open now only (not verified) Sort by Nearest Best Match Lowest Price Showing 7 of 7 sources · nearest first 1 Shivam Enterprises ELectrical and Electronics stores Live listing · OpenStreetMap 4.1 km away (straight-line from your location) Raw Material Suppliers Kidwai Nagar Shivam Enterprises ELectrical and Electronics stores, Vrindawan lane, Kidwai Nagar, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, India Phone not listed Email not listed Website not listed Hours not listed Contact information not available Relevant for: AC and DC EV Chargers Heavy-Duty Electrical Cables and Wiring Surge Protection Devices and Circuit Breakers · name mentions \"electric\"; name mentions \"electrical\" Price: not listed by source — request a quote. View on Google Maps Get Directions Call Email Website Source record 2 R.K.Electric Live listing · OpenStreetMap 4.3 km away (straight-line from your location) Manufacturers Naubasta R.K.Electric, Hamirpur Road, Naubasta, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, India Phone not listed Email not listed Website not listed Hours not listed Contact information not available Relevant for: AC and DC EV Chargers · name mentions \"electric\" Price: not listed by source — request a quote. View on Google Maps Get Directions Call Email Website Source record 3 Electric Substation No 6 Live listing · OpenStreetMap 9.6 km away (straight-line from your location) Kanpur Electric Substation No 6, Lane 11, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, India Phone not listed Email not listed Website not listed Hours not listed Contact information not available Relevant for: AC and DC EV Chargers · name mentions \"electric\" Price: not listed by source — request a quote. View on Google Maps Get Directions Call Email Website Source record 4 EV charging station Live listing · OpenStreetMap 9.7 km away (straight-line from your location) Kanpur EV charging station, Lane 11, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, India Phone not listed Email not ",
+      "suppliersShot": "B-suppliers.png",
+      "customers": "CUSTOMER VALIDATION Who buys from EV Charging Station? AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest. Primary customers AI Estimate E-Rickshaw Drivers Local commercial operators who need quick battery swaps or rapid top-ups twice a day. Willingness to pay: ₹50 to ₹100 per charge session Electric Two-Wheeler Commuters Daily office goers and students using electric scooters who live in apartments without charging points. Willingness to pay: ₹30 to ₹60 per top-up Secondary customers AI Estimate Last-Mile Delivery Fleets Delivery executives working for e-commerce and quick-commerce companies in Kanpur. Willingness to pay: Monthly subscription or pay-per-use model Customer needs AI Estimate Fast charging speeds to minimize lost earning time Affordable per-unit electricity rates Secure parking space while vehicle charges Multiple payment options including UPI and cash Clear visibility and easy roadside access Buying factors Importance 1–5 AI Estimate 0 1 2 3 4 5 Charging Speed Price per kWh LocationConvenience Availability ofChargers Safe Parking Customer acquisition ideas AI Estimate Partner with local e-rickshaw unions and stand associations in Kanpur Distribute flyers at local parking lots and commercial hubs Offer introductory free charging credits for first-time users Collaborate with local EV dealerships to provide discount vouchers to new buyers Validation interview checklist Ask these to at least 10 real prospective customers. Progress: 0/7 asked. Saved in this browser. Your tracking How many kilometers do you drive your EV daily in Kanpur? Where do you currently charge your vehicle? How much do you pay per charge currently? What is the biggest hassle you face while charging outside? Would you pay a small monthly subscription for guaranteed charging slots? What time of day do you most frequently need to charge? Does a lack of public chargers limit your daily earnings? Low-cost validation experiments AI Estimate E-Rickshaw Union Survey Visit 3 major e-rickshaw stands in Kanpur and interview 30 drivers about their charging habits and pain points. Success metric: At least 20 drivers expressing willingness to use a new designated charging spot. Cost: ₹500 for local travel and refreshments Pop-Up Mobile Charging Kiosk Set up a temporary portable generator/inverter setup at a busy junction for a weekend to test demand. Success metric: At least 10 EV owners utilizing the service over two days. Cost: ₹2,000 for fuel and setup",
+      "financial": "FINANCIAL PLANNER Unit economics · EV Charging Station Pre-filled with AI estimates for this business. Change any value to see recalculated results. Sales unit: “kWh charged”. Legend: User Input value you changed · AI Estimate AI-estimated default · Calculated formula result Inputs Investment AI Estimate Selling price / unit AI Estimate Customers per day (kWh charged) AI Estimate Working days / month AI Estimate Variable cost / unit AI Estimate Fixed costs / month AI Estimate Marketing budget / month AI Estimate DAILY REVENUE Calculated ₹4,500 MONTHLY REVENUE Calculated ₹1,35,000 MONTHLY EXPENSES Calculated ₹1,10,000 ₹75,000 variable + ₹35,000 fixed & marketing MONTHLY PROFIT Calculated ₹25,000 PROFIT MARGIN Calculated 18.5% BREAK-EVEN Calculated 20.0 months ≈ 146 kWh charged/day to cover monthly fixed costs 24-month cumulative cash position Starts at minus the investment; first 3 months ramp from 50% to 100% of steady-state sales. Calculated M0 M3 M6 M9 M12 M15 M18 M21 M24 -₹6 L -₹4 L -₹2 L ₹0 ₹2 L Break-even M14 Cumulative cash : -₹1,95,000 Investment breakdown AI Estimate AC/DC EV Charger Hardware (2 units) ₹2,50,000 Electrical wiring, transformer upgrade, and installation ₹1,00,000 Location security deposit, canopy, and basic civil work ₹1,00,000 Initial working capital and marketing reserve ₹50,000 Total ₹5,00,000 Monthly fixed costs AI Estimate Land/Space Rent ₹12,000 Site Attendant Salary ₹12,000 Internet, software subscription, and maintenance ₹4,000 Miscellaneous utility expenses ₹2,000 Total ₹30,000 Marketing budget (AI): ₹5,000/month Variable cost per unit AI Estimate Commercial electricity cost per kWh ₹9.5 Payment gateway and billing transaction fees ₹0.5 Total ₹10 AI assumptions behind these numbers AI Estimate Starting investment of 500000 INR is sufficient for a 2-point charging setup using basic commercial hardware. Commercial electricity tariff in Kanpur is assumed at approximately 9.5 INR per kWh. Average daily demand starts at 250 kWh consumed across multiple e-rickshaws and two-wheelers. Site rent is kept low by leasing a small paved corner from an existing commercial plot or petrol pump. One attendant manages day-to-day cash and digital collections.",
+      "financialShot": "B-financial.png",
+      "competitors": "COMPETITOR WAR ROOM Competition for EV Charging Station Competitor profiles below are AI assumptions about typical businesses of each type. Nearby businesses are real listings from live map data, matched by keywords — confirm what they actually sell. Competition level AI Estimate Low The public EV charging market in Kanpur is in its early stages. Competition mainly comes from unorganized charging points like home sockets used by neighbors, local mechanic shops offering makeshift charging for e-rickshaws, and a very limited number of fuel-station DC fast chargers. Competitive factors AI Estimate Charging speed and reliability Per kWh pricing transparency Proximity to e-rickshaw hubs and stands Safe and secure parking while charging Availability of digital UPI payment options Differentiation opportunities AI Estimate Dedicated fast-charging bays specifically optimized for e-rickshaws and two-wheelers On-site waiting lounge with basic amenities for drivers Transparent digital meter display showing exact units consumed Loyalty discounts and subscription passes for daily commercial drivers Direct competitor types Typical players — not specific named companies. AI Assumption COMPETITOR TYPE PRODUCTS / SERVICES TYPICAL PRICING STRENGTHS WEAKNESSES Fuel Station Public Chargers DC fast chargers installed at major fuel pumps along arterial roads. 18 to 22 INR per kWh AI assumption + Prime highway and main road locations + High brand trust and visibility − Often out of order − Long waiting queues behind commercial cars Informal Mechanic Charging Sheds Local repair shops providing overnight or ad-hoc wire-tapping charging for e-rickshaws. 40 to 60 INR per flat charge AI assumption + Very cheap + Ubiquitous in residential lanes − High risk of battery damage − No safety standards − Slow charging speeds INDIRECT COMPETITORS Battery Swapping Hubs Proprietary networks offering immediate battery swaps for specific e-rickshaw models. Home Charging Vehicle owners charging overnight using domestic electricity meters. Nearby similar businesses (2) Real listings within 15 km matching: charging station, ev charger, electric vehicle station, e rickshaw charging, amenity=charging_station. Sources: OpenStreetMap 5 km 10 km 15 km 25 km 40 km Search These are real businesses found near your location by name/category match. Whether each one is a direct competitor is not verified — check before drawing conclusions. + − Leaflet | © OpenStreetMap contributors 1 Electriva Live listing · OpenStreetMap 2.1 km away (straight-line from your location) Kanpur Electriva, NH34, Kanpur, Kanpur Nagar, Uttar Pradesh, 208012, India Phone not listed Email not listed https://electriva.in Hours not listed Matched: Similar businesses · mapped as amenity=charging_station View on Google Maps Get Directions Call Email Website Source record 2 EV charging station Live listing · OpenStreetMap 9.7 km away (straight-line from your location) Kanpur EV charging station, Lane 11, Kanpur, Kanpur Nagar, Utta"
+    },
+    "C_names": [
+      "EV Charging Station",
+      "Paper Plate Manufacturing"
+    ],
+    "pivots": "PIVOT GENERATOR Alternative models for EV Charging Station The AI generates alternative business models that reuse this idea’s customers, suppliers, skills or location. Regenerate pivots AI Estimate Generated Sep 27, 05:51 PM · gemini-3.5-flash-lite B2C Mobile EV Battery Swapping Cart FIT 8.5 A portable battery swapping service using a modified cargo e-rickshaw to deliver charged lithium-ion batteries directly to stranded or low-charge e-rickshaw drivers across Kanpur. Target: E-rickshaw drivers and delivery fleet operators Revenue model: Per-swap fee collected via cash or digital payment Why it could work: Avoids the heavy fixed cost of land lease and grid transformer upgrades, fitting well within the 500,000 INR budget while directly solving range anxiety for commercial drivers. Est. investment: 400000 INR Medium risk FIRST STEPS 1. Source a reliable supplier for portable e-rickshaw batteries and multi-slot chargers 2. Modify a standard cargo vehicle to carry charging units securely 3. Establish an initial route covering high-density e-rickshaw hubs in Kanpur 4. Partner with local driver syndicates for subscription-based swapping B2B Fleet EV Charging Consultancy & Setup FIT 9.0 Providing advisory, site assessment, and installation management services for local logistics companies and commercial fleet owners transitioning to electric vehicles in Uttar Pradesh. Target: Local last-mile delivery agencies and corporate fleet operators Revenue model: Project-based consulting fees and equipment procurement commission Why it could work: Leverages the founder's technical knowledge of EV infrastructure without requiring capital expenditure on real estate or heavy equipment. Est. investment: 150000 INR Low risk FIRST STEPS 1. Draft service packages covering site feasibility and electrical load assessment 2. Build partnerships with regional EV charger manufacturers for wholesale pricing 3. Pitch services to local logistics hubs and warehousing units in Kanpur industrial area",
+    "E_run": {
+      "outcome": "failed",
+      "url": "https://startup-sense-ai.netlify.app/analyzing/8351b413-41f6-4e3c-83f8-6f8d9098b3c0?analysisId=0215e646-9259-4539-bd8a-7c0574bd68f5",
+      "seconds": 4.009,
+      "body": "REAL AI ANALYSIS\nFailure Test Bakery\n\nKanpur, India · Budget INR 10,000\n\nAI analysis could not be completed.\nNo results were generated, and no sample data is shown in their place. Your idea and inputs are saved, so you can retry.\nAI analysis could not be completed. (startup-sense-simulated-failure-model HTTP 404: { \"error\": { \"code\": 404, \"message\": \"models/startup-sense-simulated-failure-model is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.\", \"status\": \"NOT_FOUND\" } } )\nRetry Analysis\nBack to New Idea",
+      "stagesSeen": [
+        "Understanding business idea"
+      ]
+    },
+    "V1_run": {
+      "outcome": "complete",
+      "seconds": 212.224
+    },
+    "H_run": {
+      "outcome": "complete",
+      "seconds": 212.218
+    },
+    "G_run": {
+      "outcome": "complete",
+      "seconds": 218.202
+    },
+    "G_summary": "Yeh business rural Kanpur ke kisaano ko modern agriculture drone ke zariye kam time mein behtar dawai chhidakne ki service dega. ₹3,000,000 ke budget mein ek commercial agricultural drone aur transport arrangement kiya jayega. Kisaano ko manual spraying ke mukable isse chemical exposure kam aur uniform spray milega. Service booking ke liye local village representatives ya direct phone calls ka use hoga.",
+    "X4_names": [
+      "Drone se kheton mein dawai chhidakne ki service",
+      "बकरी के दूध से हर्बल साबुन बनाना",
+      "Rooftop hydroponic microgreens farm",
+      "EV Charging Station",
+      "Paper Plate Manufacturing"
+    ]
+  },
+  "status": {
+    "ai": {
+      "configured": true,
+      "provider": "Google Gemini",
+      "model": "gemini-3.8-flash"
+    },
+    "places": {
+      "googlePlaces": false,
+      "openStreetMap": true
+    },
+    "database": {
+      "configured": true
+    },
+    "failureTestAllowed": true,
+    "deploy": null
+  },
+  "finishedAt": "2026-09-27T18:02:40.577Z",
+  "summary": {
+    "passed": 15,
+    "failed": 0
+  }
+}
