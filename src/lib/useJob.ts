@@ -13,7 +13,9 @@ export function useJob(type: "suppliers" | "competitors" | "pivots") {
 
   usePolling(!!job && (job.status === "queued" || job.status === "running"), refresh, 2500);
 
-  useEffect(() => setStartError(null), [analysis?.id]);
+  useEffect(() => {
+    setStartError(null);
+  }, [analysis?.id]);
 
   async function start(params: { radiusKm?: number } = {}) {
     if (!idea || !analysis) return;

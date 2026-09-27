@@ -201,6 +201,14 @@ await test("R", "Empty state → tap “Analyze Your First Idea” (phone + desk
     ["desktop", { viewport: { width: 1440, height: 1000 } }],
   ]) {
     const c = await browser.newContext(opts);
+    // Newer Chrome (e.g. 151) returns a Promise from window.scrollTo — emulate it to catch that class of crash.
+    await c.addInitScript(() => {
+      const orig = window.scrollTo.bind(window);
+      window.scrollTo = (...a) => {
+        orig(...a);
+        return Promise.resolve();
+      };
+    });
     const p = await c.newPage();
     const errs = [];
     p.on("pageerror", (e) => errs.push(String(e?.stack || e).slice(0, 1500)));

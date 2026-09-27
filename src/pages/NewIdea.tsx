@@ -41,7 +41,9 @@ export default function NewIdea() {
   const nav = useNavigate();
   const { refreshIdeas } = useCurrentIdea();
 
-  useEffect(() => setSimulate(storageGet(SIMULATE_KEY) === "1"), []);
+  useEffect(() => {
+    setSimulate(storageGet(SIMULATE_KEY) === "1");
+  }, []);
 
   const set = (k: Key) => (e: { target: { value: string } }) => {
     setF((p) => ({ ...p, [k]: e.target.value }));

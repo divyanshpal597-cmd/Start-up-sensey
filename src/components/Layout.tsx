@@ -152,7 +152,9 @@ function BusinessSwitcher() {
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const loc = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [loc.pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [loc.pathname]);
   return (
     <div className="min-h-screen lg:pl-64">
       <aside className="no-print fixed inset-y-0 left-0 z-40 hidden w-64 lg:block">

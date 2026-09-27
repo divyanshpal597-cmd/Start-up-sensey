@@ -25,7 +25,9 @@ function Body() {
   const base = useMemo(() => aiDrivers(ai)!, [ai]);
   const [over, setOver] = useState<Partial<Drivers>>({});
   const [drafts, setDrafts] = useState<Partial<Record<keyof Drivers, string>>>({});
-  useEffect(() => setOver(loadOverrides(analysis.id)), [analysis.id]);
+  useEffect(() => {
+    setOver(loadOverrides(analysis.id));
+  }, [analysis.id]);
   const d: Drivers = { ...base, ...over };
   const c = calculate(d);
   const series = cashflowSeries(d, 24);
