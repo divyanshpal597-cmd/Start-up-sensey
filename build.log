@@ -1,0 +1,18 @@
+
+> startup-sense@1.0.0 build
+> vite build
+
+[36mvite v6.4.3 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 2543 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                              [39m[1m[2m    1.03 kB[22m[1m[22m[2m │ gzip:   0.54 kB[22m
+[2mdist/[22m[2massets/[22m[35mindex-xB6Enlet.css               [39m[1m[2m   63.17 kB[22m[1m[22m[2m │ gzip:  15.09 kB[22m
+[2mdist/[22m[2massets/[22m[36mpurify.es-BYftNTi7.js            [39m[1m[2m   29.40 kB[22m[1m[22m[2m │ gzip:  11.31 kB[22m
+[2mdist/[22m[2massets/[22m[36mindex.es-BuwnQ-R7.js             [39m[1m[2m  159.71 kB[22m[1m[22m[2m │ gzip:  53.55 kB[22m
+[2mdist/[22m[2massets/[22m[36mhtml2canvas.esm-CBrSDip1.js      [39m[1m[2m  202.30 kB[22m[1m[22m[2m │ gzip:  48.03 kB[22m
+[2mdist/[22m[2massets/[22m[36mhtml2canvas-pro.esm-DHKZFdC3.js  [39m[1m[2m  210.98 kB[22m[1m[22m[2m │ gzip:  51.38 kB[22m
+[2mdist/[22m[2massets/[22m[36mjspdf.es.min-rL1SeX2X.js         [39m[1m[2m  388.28 kB[22m[1m[22m[2m │ gzip: 127.44 kB[22m
+[2mdist/[22m[2massets/[22m[36mindex-sgzIHk-E.js                [39m[1m[2m1,090.28 kB[22m[1m[22m[2m │ gzip: 312.78 kB[22m
+[32m✓ built in 7.19s[39m
