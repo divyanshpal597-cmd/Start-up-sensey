@@ -21,6 +21,7 @@ export default async (req: Request, _context: Context) => {
       ideaId: body.ideaId,
       ownerHash: body.ownerHash,
       simulateFailure: body.simulateFailure === true,
+      language: body.language,
     });
   } else if (["suppliers", "competitors", "pivots"].includes(body?.type)) {
     await runJob(body);

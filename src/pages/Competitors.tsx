@@ -6,6 +6,7 @@ import { competitionTone } from "../lib/format";
 import PlaceCard from "../components/PlaceCard";
 import PlacesMap from "../components/PlacesMap";
 import { BulletList, Card, ErrorBox, NeedsAnalysis, Notice, PageHeader, Pill, SIZE, Spinner, Tag, cx } from "../components/ui";
+import { t } from "../lib/i18n";
 
 export default function Competitors() {
   const ctx = useCurrentIdea();
@@ -30,12 +31,12 @@ function Body() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Competitor War Room"
-        title={`Competition for ${ai.businessOverview?.businessName}`}
+        title={t("Competition for {name}", { name: ai.businessOverview?.businessName })}
         subtitle="Competitor profiles below are AI assumptions about typical businesses of each type. Nearby businesses are real listings from live map data, matched by keywords — confirm what they actually sell."
       />
       <div className="grid gap-4 md:grid-cols-3">
         <Card title="Competition level" icon={<Swords className="h-4 w-4" />} action={<Tag kind="ai" />}>
-          <Pill className={competitionTone(c.competitionLevel)}>{c.competitionLevel}</Pill>
+          <Pill className={competitionTone(c.competitionLevel)}>{t(c.competitionLevel || "—")}</Pill>
           <p className="mt-3 text-sm text-slate-600">{c.summary}</p>
         </Card>
         <Card title="Competitive factors" icon={<Crosshair className="h-4 w-4" />} action={<Tag kind="ai" />}>
@@ -51,11 +52,11 @@ function Body() {
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-                <th className="py-2 pr-3">Competitor type</th>
-                <th className="py-2 pr-3">Products / services</th>
-                <th className="py-2 pr-3">Typical pricing</th>
-                <th className="py-2 pr-3">Strengths</th>
-                <th className="py-2">Weaknesses</th>
+                <th className="py-2 pr-3">{t("Competitor type")}</th>
+                <th className="py-2 pr-3">{t("Products / services")}</th>
+                <th className="py-2 pr-3">{t("Typical pricing")}</th>
+                <th className="py-2 pr-3">{t("Strengths")}</th>
+                <th className="py-2">{t("Weaknesses")}</th>
               </tr>
             </thead>
             <tbody>
@@ -63,7 +64,7 @@ function Body() {
                 <tr key={i} className="border-b border-slate-100 align-top last:border-0">
                   <td className="py-3 pr-3 font-semibold text-slate-900">{x.type}</td>
                   <td className="py-3 pr-3 text-slate-600">{x.description}</td>
-                  <td className="py-3 pr-3 text-slate-600">{x.typicalPricing} <span className="block text-[11px] text-amber-700">AI assumption</span></td>
+                  <td className="py-3 pr-3 text-slate-600">{x.typicalPricing} <span className="block text-[11px] text-amber-700">{t("AI assumption")}</span></td>
                   <td className="py-3 pr-3 text-slate-600"><ul className="space-y-1">{(x.strengths || []).map((s: string, j: number) => <li key={j}>+ {s}</li>)}</ul></td>
                   <td className="py-3 text-slate-600"><ul className="space-y-1">{(x.weaknesses || []).map((s: string, j: number) => <li key={j}>− {s}</li>)}</ul></td>
                 </tr>
@@ -72,7 +73,7 @@ function Body() {
           </table>
         </div>
         <div className="mt-4">
-          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Indirect competitors</div>
+          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">{t("Indirect competitors")}</div>
           <div className="grid gap-3 md:grid-cols-3">
             {(c.indirectCompetitors || []).map((x: any, i: number) => (
               <div key={i} className="rounded-xl bg-slate-50 p-3 text-sm">
@@ -87,31 +88,31 @@ function Body() {
       {live.status === "unavailable" ? (
         <ErrorBox
           title="Live business search is temporarily unavailable."
-          actions={<button onClick={() => start({ radiusKm: radius })} disabled={running} className={cx("btn-primary", SIZE.md)}>{running ? <Spinner /> : <RefreshCw className="h-4 w-4" />} Try again</button>}
+          actions={<button onClick={() => start({ radiusKm: radius })} disabled={running} className={cx("btn-primary", SIZE.md)}>{running ? <Spinner /> : <RefreshCw className="h-4 w-4" />} {t("Try again")}</button>}
         >
-          No nearby businesses are shown because the data source could not be reached. Nothing has been invented in their place.
+          {t("No nearby businesses are shown because the data source could not be reached. Nothing has been invented in their place.")}
         </ErrorBox>
       ) : (
         <Card
-          title={`Nearby similar businesses (${results.length})`}
-          subtitle={`Real listings within ${live.radiusKm} km matching: ${(live.keywords || c.searchKeywords || []).join(", ") || "—"}${(live.osmTags || []).length ? ` · tags ${live.osmTags.join(", ")}` : ""}. Sources: ${(live.sources || []).join(" + ") || "—"}`}
+          title={t("Nearby similar businesses ({n})", { n: results.length })}
+          subtitle={t("Real listings within {r} km matching: {k}. Sources: {s}", { r: live.radiusKm, k: [...(live.keywords || c.searchKeywords || []), ...(live.osmTags || [])].join(", ") || "—", s: (live.sources || []).join(" + ") || "—" })}
           action={
             <div className="flex items-center gap-2">
-              <select className="input w-24 py-1.5 text-xs" value={radius} onChange={(e) => setRadius(Number(e.target.value))} aria-label="Radius">
+              <select className="input w-24 py-1.5 text-xs" value={radius} onChange={(e) => setRadius(Number(e.target.value))} aria-label={t("Radius")}>
                 {[5, 10, 15, 25, 40].map((r) => <option key={r} value={r}>{r} km</option>)}
               </select>
               <button onClick={() => start({ radiusKm: radius })} disabled={running} className={cx("btn-primary", SIZE.sm)}>
-                {running ? <Spinner className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />} {running ? "Searching…" : "Search"}
+                {running ? <Spinner className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />} {running ? t("Searching…") : t("Search")}
               </button>
             </div>
           }
         >
           {error && <div className="mb-3"><Notice tone="warn">{error}</Notice></div>}
-          <div className="mb-4"><Notice>These are real businesses found near your location by name/category match. Whether each one is a direct competitor is <b>not verified</b> — check before drawing conclusions.</Notice></div>
+          <div className="mb-4"><Notice>{t("These are real businesses found near your location by name/category match. Whether each one is a direct competitor is not verified — check before drawing conclusions.")}</Notice></div>
           {origin && results.length > 0 && <PlacesMap center={origin} places={results} radiusKm={live.radiusKm} highlightId={hover} height={300} />}
           <div className="mt-4 space-y-3">
             {results.map((p, i) => <PlaceCard key={p.id} p={p} rank={i + 1} origin={origin} onHover={setHover} mode="competitor" />)}
-            {!results.length && <p className="text-sm text-slate-500">No similar businesses were found in live map data within this radius. That may mean low local competition — or simply that local businesses aren’t mapped. Verify on the ground.</p>}
+            {!results.length && <p className="text-sm text-slate-500">{t("No similar businesses were found in live map data within this radius. That may mean low local competition — or simply that local businesses aren’t mapped. Verify on the ground.")}</p>}
           </div>
         </Card>
       )}

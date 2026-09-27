@@ -15,6 +15,12 @@ export const CURRENCIES: Record<string, { symbol: string; locale: string }> = {
   LKR: { symbol: "Rs ", locale: "en-LK" },
 };
 
+export const LANGUAGES = ["en", "hi", "hinglish"] as const;
+export type Lang = (typeof LANGUAGES)[number];
+export function cleanLanguage(v: unknown): Lang {
+  return (LANGUAGES as readonly string[]).includes(String(v)) ? (String(v) as Lang) : "en";
+}
+
 export const BUSINESS_TYPES = ["Product", "Service", "Let AI decide"] as const;
 
 export interface IdeaInput {
@@ -33,6 +39,9 @@ export interface IdeaInput {
   sellingPrice: string;
   category: string;
   additionalInfo: string;
+  language: Lang;
+  inputMethod?: "typed" | "voice";
+  transcript?: string;
   simulateFailure?: boolean;
 }
 
@@ -97,6 +106,9 @@ export function validateIdea(body: any): IdeaInput {
     sellingPrice: clean(body.sellingPrice, 200),
     category: clean(body.category, 100),
     additionalInfo: clean(body.additionalInfo, 2000),
+    language: cleanLanguage(body.language),
+    inputMethod: body.inputMethod === "voice" ? "voice" : "typed",
+    transcript: clean(body.transcript, 3000) || undefined,
     simulateFailure: body.simulateFailure === true,
   };
 }

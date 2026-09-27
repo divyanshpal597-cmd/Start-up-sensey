@@ -4,6 +4,7 @@
 import type { Config, Context } from "@netlify/functions";
 import { db, enforceRateLimit } from "../lib/db.mts";
 import { aiConfigured } from "../lib/gemini.mts";
+import { cleanLanguage } from "../lib/validate.mts";
 import {
   HttpError, assertSameOrigin, assertUuid, errorResponse, json, ownerHash, readJson, triggerWorker,
 } from "../lib/http.mts";
@@ -24,7 +25,8 @@ export default async (req: Request, context: Context) => {
       throw new HttpError(503, "ai_not_configured", "The AI service is not configured on the server.");
     }
     const radiusKm = Number(body?.radiusKm);
-    const params = Number.isFinite(radiusKm) ? { radiusKm: Math.min(60, Math.max(2, radiusKm)) } : {};
+    const params: Record<string, unknown> = Number.isFinite(radiusKm) ? { radiusKm: Math.min(60, Math.max(2, radiusKm)) } : {};
+    if (body?.language) params.language = cleanLanguage(body.language);
 
     await enforceRateLimit(`jobs:ip:${context.ip || "unknown"}`, 40, 3600, "search");
     const rec = await db.getIdea(owner, ideaId, analysisId);

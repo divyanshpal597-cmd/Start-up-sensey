@@ -2,19 +2,20 @@ import type { ReactNode } from "react";
 import { Clock, ExternalLink, Globe, Mail, MapPin, Navigation, Phone, Star } from "lucide-react";
 import { mapsDirections, mapsView } from "../lib/format";
 import { Pill, SIZE, Tag, cx } from "./ui";
+import { t } from "../lib/i18n";
 
 function ActionLink({ href, icon, label, disabled }: { href?: string; icon: ReactNode; label: string; disabled?: boolean }) {
   if (disabled || !href) {
     return (
-      <span className={cx("btn border border-slate-100 bg-slate-50 text-slate-300", SIZE.sm)} title={`${label}: not available`}>
-        {icon} {label}
+      <span className={cx("btn border border-slate-100 bg-slate-50 text-slate-300", SIZE.sm)} title={`${t(label)}: ${t("not available")}`}>
+        {icon} {t(label)}
       </span>
     );
   }
   const external = href.startsWith("http");
   return (
     <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className={cx("btn-secondary", SIZE.sm)}>
-      {icon} {label}
+      {icon} {t(label)}
     </a>
   );
 }
@@ -41,16 +42,16 @@ export default function PlaceCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="font-semibold text-slate-900" data-testid="place-name">{p.name}</h4>
-            <Tag kind="verified" label={`Live listing · ${p.source}`} />
+            <Tag kind="verified" label={`${t("Live listing")} · ${p.source}`} />
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-            <span className="font-semibold text-indigo-700" data-testid="place-distance">{p.distanceKm} km away</span>
-            <span>(straight-line from your location)</span>
-            {p.supplierType && p.supplierType !== "Unclassified" && <Pill className="bg-slate-100 text-slate-600 ring-slate-200">{p.supplierType}</Pill>}
+            <span className="font-semibold text-indigo-700" data-testid="place-distance">{t("{n} km away", { n: p.distanceKm })}</span>
+            <span>{t("(straight-line from your location)")}</span>
+            {p.supplierType && p.supplierType !== "Unclassified" && <Pill className="bg-slate-100 text-slate-600 ring-slate-200">{t(p.supplierType)}</Pill>}
             {p.rating != null && (
               <span className="inline-flex items-center gap-1 text-amber-600"><Star className="h-3 w-3 fill-amber-400 stroke-amber-500" /> {p.rating} ({p.ratingCount ?? 0})</span>
             )}
-            {p.openNow != null && <Pill className={p.openNow ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-rose-50 text-rose-700 ring-rose-200"}>{p.openNow ? "Open now" : "Closed now"}</Pill>}
+            {p.openNow != null && <Pill className={p.openNow ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-rose-50 text-rose-700 ring-rose-200"}>{p.openNow ? t("Open now") : t("Closed now")}</Pill>}
           </div>
         </div>
       </div>
@@ -60,35 +61,35 @@ export default function PlaceCard({
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
           <div>
             {p.locality && <div className="font-medium text-slate-700">{p.locality}</div>}
-            <div className="text-slate-600">{p.address || "Address not listed in the data source"}</div>
-            {p.addressApproximate && <div className="text-[11px] text-amber-700">Approximate address, derived from map coordinates</div>}
+            <div className="text-slate-600">{p.address || t("Address not listed in the data source")}</div>
+            {p.addressApproximate && <div className="text-[11px] text-amber-700">{t("Approximate address, derived from map coordinates")}</div>}
           </div>
         </div>
         <div className="flex gap-2">
           <Phone className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-          <span className={p.phone ? "text-slate-700" : "text-slate-400"}>{p.phone || "Phone not listed"}</span>
+          <span className={p.phone ? "text-slate-700" : "text-slate-400"}>{p.phone || t("Phone not listed")}</span>
         </div>
         <div className="flex gap-2">
           <Mail className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-          <span className={cx("truncate", p.email ? "text-slate-700" : "text-slate-400")}>{p.email || "Email not listed"}</span>
+          <span className={cx("truncate", p.email ? "text-slate-700" : "text-slate-400")}>{p.email || t("Email not listed")}</span>
         </div>
         <div className="flex gap-2">
           <Globe className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-          <span className={cx("truncate", p.website ? "text-slate-700" : "text-slate-400")}>{p.website || "Website not listed"}</span>
+          <span className={cx("truncate", p.website ? "text-slate-700" : "text-slate-400")}>{p.website || t("Website not listed")}</span>
         </div>
         <div className="flex gap-2">
           <Clock className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-          <span className={cx("line-clamp-2", p.openingHours ? "text-slate-700" : "text-slate-400")}>{p.openingHours || "Hours not listed"}</span>
+          <span className={cx("line-clamp-2", p.openingHours ? "text-slate-700" : "text-slate-400")}>{p.openingHours || t("Hours not listed")}</span>
         </div>
       </dl>
-      {!hasContact && <div className="mt-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs text-slate-500">Contact information not available</div>}
+      {!hasContact && <div className="mt-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs text-slate-500">{t("Contact information not available")}</div>}
 
       <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
-        <span className="text-slate-500">{mode === "supplier" ? "Relevant for:" : "Matched:"}</span>
+        <span className="text-slate-500">{mode === "supplier" ? t("Relevant for:") : t("Matched:")}</span>
         {(p.matchedFor || []).map((mat: string) => <Pill key={mat} className="bg-indigo-50 text-indigo-700 ring-indigo-200">{mat}</Pill>)}
         {p.matchReason && <span className="text-slate-400">· {p.matchReason}</span>}
       </div>
-      {mode === "supplier" && <div className="mt-1 text-xs text-slate-400">Price: not listed by source — request a quote.</div>}
+      {mode === "supplier" && <div className="mt-1 text-xs text-slate-400">{t("Price: not listed by source — request a quote.")}</div>}
 
       <div className="mt-4 flex flex-wrap gap-2">
         <ActionLink href={mapsView(p.lat, p.lng)} icon={<MapPin className="h-3.5 w-3.5" />} label="View on Google Maps" />

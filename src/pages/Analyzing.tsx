@@ -5,6 +5,7 @@ import { Api, storageGet, storageSet } from "../lib/api";
 import { useCurrentIdea } from "../context/CurrentIdea";
 import { Card, ErrorBox, LoadingBlock, PageHeader, SIZE, Spinner, cx } from "../components/ui";
 import { SIMULATE_KEY } from "./NewIdea";
+import { getLang, t } from "../lib/i18n";
 
 export const STAGES = [
   "Understanding business idea...",
@@ -37,7 +38,7 @@ export default function Analyzing() {
     setError(null);
     try {
       const simulate = storageGet(SIMULATE_KEY) === "1";
-      const r = await Api.reanalyze(ideaId, simulate);
+      const r = await Api.reanalyze(ideaId, simulate, getLang());
       if (simulate) storageSet(SIMULATE_KEY, null);
       started.current = Date.now();
       setRec(null);
@@ -96,8 +97,8 @@ export default function Analyzing() {
     return (
       <ErrorBox title="AI analysis could not be completed." actions={
         <>
-          <button onClick={startRetry} className={cx("btn-primary", SIZE.md)}>Retry Analysis</button>
-          <Link to="/new" className={cx("btn-secondary", SIZE.md)}>Back to New Idea</Link>
+          <button onClick={startRetry} className={cx("btn-primary", SIZE.md)}>{t("Retry Analysis")}</button>
+          <Link to="/new" className={cx("btn-secondary", SIZE.md)}>{t("Back to New Idea")}</Link>
         </>
       }>{error}</ErrorBox>
     );
@@ -113,7 +114,7 @@ export default function Analyzing() {
       <PageHeader
         eyebrow="Real AI analysis"
         title={rec.idea.businessName}
-        subtitle={`${rec.idea.location} · Budget ${rec.idea.currency} ${Number(rec.idea.budget).toLocaleString("en-IN")}`}
+        subtitle={`${rec.idea.location} · ${t("Budget")} ${rec.idea.currency} ${Number(rec.idea.budget).toLocaleString("en-IN")}`}
       />
 
       {status === "failed" ? (
@@ -121,12 +122,12 @@ export default function Analyzing() {
           title="AI analysis could not be completed."
           actions={
             <>
-              <button onClick={startRetry} className={cx("btn-primary", SIZE.md)}>Retry Analysis</button>
-              <Link to="/new" className={cx("btn-secondary", SIZE.md)}>Back to New Idea</Link>
+              <button onClick={startRetry} className={cx("btn-primary", SIZE.md)}>{t("Retry Analysis")}</button>
+              <Link to="/new" className={cx("btn-secondary", SIZE.md)}>{t("Back to New Idea")}</Link>
             </>
           }
         >
-          No results were generated, and no sample data is shown in their place. Your idea and inputs are saved, so you can retry.
+          {t("No results were generated, and no sample data is shown in their place. Your idea and inputs are saved, so you can retry.")}
           {a?.error && <span className="mt-2 block rounded-lg bg-white/60 p-2 font-mono text-[11px] text-rose-700">{a.error}</span>}
         </ErrorBox>
       ) : (
@@ -140,10 +141,10 @@ export default function Analyzing() {
               )}
               <div>
                 <div className="font-display text-lg font-bold text-slate-900">
-                  {status === "complete" ? "Analysis Complete" : status === "queued" ? "Waiting for the AI worker…" : a?.stage || "Working…"}
+                  {status === "complete" ? t("Analysis Complete") : status === "queued" ? t("Waiting for the AI worker…") : t(a?.stage || "Working…")}
                 </div>
                 <div className="text-xs text-slate-500">
-                  {status === "complete" ? `Saved with AI score ${Number(a.score).toFixed(1)} / 10` : `${elapsed}s elapsed · live progress from the server`}
+                  {status === "complete" ? t("Saved with AI score {s} / 10", { s: Number(a.score).toFixed(1) }) : t("{n}s elapsed · live progress from the server", { n: elapsed })}
                 </div>
               </div>
             </div>
@@ -163,19 +164,19 @@ export default function Analyzing() {
                   ) : (
                     <Circle className="h-5 w-5 text-slate-300" />
                   )}
-                  <span className={cx(state === "todo" ? "text-slate-400" : "text-slate-800", state === "active" && "font-semibold")}>{s}</span>
+                  <span className={cx(state === "todo" ? "text-slate-400" : "text-slate-800", state === "active" && "font-semibold")}>{t(s)}</span>
                 </li>
               );
             })}
           </ol>
           {queuedTooLong && (
-            <p className="mt-5 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">The worker has not picked this up yet. It may be busy — keep this page open, or retry.</p>
+            <p className="mt-5 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">{t("The worker has not picked this up yet. It may be busy — keep this page open, or retry.")}</p>
           )}
           {status === "complete" && (
             <div className="mt-6 flex flex-wrap gap-2">
-              <button onClick={() => nav("/")} className={cx("btn-primary", SIZE.md)}>Open dashboard</button>
-              <Link to="/suppliers" className={cx("btn-secondary", SIZE.md)}>See nearest suppliers</Link>
-              <Link to="/reports" className={cx("btn-secondary", SIZE.md)}>View report</Link>
+              <button onClick={() => nav("/")} className={cx("btn-primary", SIZE.md)}>{t("Open dashboard")}</button>
+              <Link to="/suppliers" className={cx("btn-secondary", SIZE.md)}>{t("See nearest suppliers")}</Link>
+              <Link to="/reports" className={cx("btn-secondary", SIZE.md)}>{t("View report")}</Link>
             </div>
           )}
         </Card>

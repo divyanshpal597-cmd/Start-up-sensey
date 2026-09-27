@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useCurrentIdea } from "../context/CurrentIdea";
 import { storageGet, storageSet } from "../lib/api";
 import { BulletList, Card, NeedsAnalysis, PageHeader, Tag, cx } from "../components/ui";
+import { t } from "../lib/i18n";
 
 export default function Customers() {
   const ctx = useCurrentIdea();
@@ -19,7 +20,7 @@ function Segment({ s, primary }: { s: any; primary?: boolean }) {
     <div className={cx("rounded-xl border p-4", primary ? "border-indigo-200 bg-indigo-50/50" : "border-slate-200 bg-slate-50/60")}>
       <div className="font-semibold text-slate-900">{s.segment}</div>
       <p className="mt-1 text-sm text-slate-600">{s.description}</p>
-      {s.willingnessToPay && <p className="mt-2 text-xs text-slate-500"><b>Willingness to pay:</b> {s.willingnessToPay}</p>}
+      {s.willingnessToPay && <p className="mt-2 text-xs text-slate-500"><b>{t("Willingness to pay:")}</b> {s.willingnessToPay}</p>}
     </div>
   );
 }
@@ -49,7 +50,7 @@ function Body() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Customer Validation" title={`Who buys from ${ai.businessOverview?.businessName}?`} subtitle="AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest." />
+      <PageHeader eyebrow="Customer Validation" title={t("Who buys from {name}?", { name: ai.businessOverview?.businessName })} subtitle="AI-identified customer segments, what they need, and a checklist to validate demand with real people before you invest." />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Primary customers" icon={<Users className="h-4 w-4" />} action={<Tag kind="ai" />}>
           <div className="space-y-3">{(c.primaryCustomers || []).map((s: any, i: number) => <Segment key={i} s={s} primary />)}</div>
@@ -81,7 +82,7 @@ function Body() {
       </Card>
       <Card
         title="Validation interview checklist"
-        subtitle={`Ask these to at least 10 real prospective customers. Progress: ${asked}/${questions.length} asked. Saved in this browser.`}
+        subtitle={t("Ask these to at least 10 real prospective customers. Progress: {a}/{n} asked. Saved in this browser.", { a: asked, n: questions.length })}
         icon={<ClipboardList className="h-4 w-4" />}
         action={<Tag kind="user" label="Your tracking" />}
       >
@@ -92,7 +93,7 @@ function Body() {
                 {checks[i]?.asked ? <CheckSquare className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" /> : <Square className="mt-0.5 h-5 w-5 shrink-0 text-slate-300" />}
                 <span className={cx("text-sm", checks[i]?.asked ? "text-slate-500 line-through" : "text-slate-800")}>{q}</span>
               </button>
-              <input className="input mt-2 py-1.5 text-xs" placeholder="What did customers say? (notes)" value={checks[i]?.notes || ""} onChange={(e) => update(i, { notes: e.target.value })} />
+              <input className="input mt-2 py-1.5 text-xs" placeholder={t("What did customers say? (notes)")} value={checks[i]?.notes || ""} onChange={(e) => update(i, { notes: e.target.value })} />
             </div>
           ))}
         </div>
@@ -104,8 +105,8 @@ function Body() {
               <div className="font-semibold text-slate-900">{x.name}</div>
               <p className="mt-1 text-sm text-slate-600">{x.how}</p>
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                <span><b>Success metric:</b> {x.successMetric}</span>
-                <span><b>Cost:</b> {x.cost}</span>
+                <span><b>{t("Success metric:")}</b> {x.successMetric}</span>
+                <span><b>{t("Cost:")}</b> {x.cost}</span>
               </div>
             </div>
           ))}

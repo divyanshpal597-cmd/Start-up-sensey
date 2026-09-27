@@ -5,6 +5,8 @@ import { Api } from "../lib/api";
 import { exportElementToPdf } from "../lib/pdf";
 import ReportDocument from "../components/ReportDocument";
 import { NeedsAnalysis, Notice, PageHeader, SIZE, Spinner, cx } from "../components/ui";
+import { t } from "../lib/i18n";
+import ReadAloud from "../components/ReadAloud";
 
 export async function downloadPdf(name: string) {
   const el = document.getElementById("report");
@@ -33,7 +35,7 @@ function Body() {
     try {
       await downloadPdf(name);
     } catch (e) {
-      alert(`PDF export failed: ${(e as Error).message}. You can use Print → Save as PDF instead.`);
+      alert(t("PDF export failed: {e}. You can use Print → Save as PDF instead.", { e: (e as Error).message }));
     } finally {
       setPdfBusy(false);
     }
@@ -47,8 +49,8 @@ function Body() {
       const url = `${window.location.origin}${r.path}`;
       if (navigator.share) {
         try {
-          await navigator.share({ title: `${name} — Startup Sense report`, url });
-          setShareMsg(`Share link: ${url}`);
+          await navigator.share({ title: `${name} — ${t("Startup Sense report")}`, url });
+          setShareMsg(`${t("Share link:")} ${url}`);
           return;
         } catch {
           /* user cancelled — fall back to copy */
@@ -56,9 +58,9 @@ function Body() {
       }
       try {
         await navigator.clipboard.writeText(url);
-        setShareMsg(`Link copied: ${url}`);
+        setShareMsg(`${t("Link copied:")} ${url}`);
       } catch {
-        setShareMsg(`Share link: ${url}`);
+        setShareMsg(`${t("Share link:")} ${url}`);
       }
     } catch (e) {
       setShareMsg((e as Error).message);
@@ -72,19 +74,20 @@ function Body() {
       <div className="no-print">
         <PageHeader
           eyebrow="Reports"
-          title={`Report · ${name}`}
+          title={`${t("Report")} · ${name}`}
           subtitle="A complete, printable validation report for the currently selected business."
           actions={
             <>
-              <button onClick={onPdf} disabled={pdfBusy} className={cx("btn-primary", SIZE.md)}>{pdfBusy ? <Spinner /> : <Download className="h-4 w-4" />} Download PDF</button>
-              <button onClick={() => window.print()} className={cx("btn-secondary", SIZE.md)}><Printer className="h-4 w-4" /> Print</button>
-              <button onClick={onShare} disabled={shareBusy} className={cx("btn-secondary", SIZE.md)}>{shareBusy ? <Spinner /> : <Share2 className="h-4 w-4" />} Share</button>
+              <button onClick={onPdf} disabled={pdfBusy} className={cx("btn-primary", SIZE.md)}>{pdfBusy ? <Spinner /> : <Download className="h-4 w-4" />} {t("Download PDF")}</button>
+              <button onClick={() => window.print()} className={cx("btn-secondary", SIZE.md)}><Printer className="h-4 w-4" /> {t("Print")}</button>
+              <ReadAloud ai={ai} idea={idea} analysis={analysis} />
+              <button onClick={onShare} disabled={shareBusy} className={cx("btn-secondary", SIZE.md)}>{shareBusy ? <Spinner /> : <Share2 className="h-4 w-4" />} {t("Share")}</button>
             </>
           }
         />
         {shareMsg && (
           <div className="mb-4">
-            <Notice><span className="inline-flex items-center gap-2 break-all"><Check className="h-4 w-4 shrink-0" /> {shareMsg}</span> <span className="block text-xs opacity-75">Anyone with this link can view a read-only copy of this report.</span></Notice>
+            <Notice><span className="inline-flex items-center gap-2 break-all"><Check className="h-4 w-4 shrink-0" /> {shareMsg}</span> <span className="block text-xs opacity-75">{t("Anyone with this link can view a read-only copy of this report.")}</span></Notice>
           </div>
         )}
       </div>

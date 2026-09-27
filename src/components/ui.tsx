@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, BadgeCheck, Calculator, Loader2, Sparkles, UserPen, Lightbulb } from "lucide-react";
+import { t } from "../lib/i18n";
+
+/** Translate plain-string children; leave elements untouched. */
+export const tr = (v: ReactNode): ReactNode => (typeof v === "string" ? t(v) : v);
 
 export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
@@ -20,8 +24,8 @@ export function Card({ children, className, title, subtitle, action, icon }: {
           <div className="flex items-start gap-3">
             {icon && <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600">{icon}</div>}
             <div>
-              {title && <h3 className="text-base font-bold text-slate-900">{title}</h3>}
-              {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
+              {title && <h3 className="text-base font-bold text-slate-900">{tr(title)}</h3>}
+              {subtitle && <p className="mt-0.5 text-sm text-slate-500">{tr(subtitle)}</p>}
             </div>
           </div>
           {action}
@@ -70,9 +74,9 @@ const KIND: Record<Kind, { cls: string; label: string; icon: ReactNode; title: s
 export function Tag({ kind, label, className }: { kind: Kind; label?: string; className?: string }) {
   const k = KIND[kind];
   return (
-    <span title={k.title} className={cx("inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset", k.cls, className)}>
+    <span title={t(k.title)} className={cx("inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset", k.cls, className)}>
       {k.icon}
-      {label || k.label}
+      {t(label || k.label)}
     </span>
   );
 }
@@ -93,12 +97,12 @@ export function Stat({ label, value, sub, tag, icon, tone }: {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
           {icon}
-          {label}
+          {t(label)}
         </div>
         {tag && <Tag kind={tag} />}
       </div>
       <div className={cx("mt-2 font-display text-2xl font-extrabold text-slate-900", tone)}>{value}</div>
-      {sub && <div className="mt-1 text-xs text-slate-500">{sub}</div>}
+      {sub && <div className="mt-1 text-xs text-slate-500">{tr(sub)}</div>}
     </div>
   );
 }
@@ -107,9 +111,9 @@ export function PageHeader({ title, subtitle, actions, eyebrow }: { title: React
   return (
     <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div>
-        {eyebrow && <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-600">{eyebrow}</div>}
-        <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{title}</h1>
-        {subtitle && <p className="mt-1.5 max-w-3xl text-sm text-slate-500">{subtitle}</p>}
+        {eyebrow && <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-600">{tr(eyebrow)}</div>}
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{tr(title)}</h1>
+        {subtitle && <p className="mt-1.5 max-w-3xl text-sm text-slate-500">{tr(subtitle)}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -121,6 +125,7 @@ export function Spinner({ className }: { className?: string }) {
 }
 
 export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
+  label = t(label);
   return (
     <div className="grid place-items-center py-24 text-slate-500">
       <div className="flex items-center gap-3">
@@ -137,8 +142,8 @@ export function EmptyState({ title, body, action, icon }: { title: string; body?
         <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30">
           {icon || <Sparkles className="h-7 w-7" />}
         </div>
-        <h2 className="font-display text-xl font-extrabold text-slate-900">{title}</h2>
-        {body && <p className="mt-2 text-sm text-slate-500">{body}</p>}
+        <h2 className="font-display text-xl font-extrabold text-slate-900">{t(title)}</h2>
+        {body && <p className="mt-2 text-sm text-slate-500">{tr(body)}</p>}
         {action && <div className="mt-6 flex justify-center gap-2">{action}</div>}
       </div>
     </div>
@@ -151,7 +156,7 @@ export function ErrorBox({ title, children, actions }: { title: string; children
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
         <div className="flex-1">
-          <div className="font-semibold">{title}</div>
+          <div className="font-semibold">{t(title)}</div>
           {children && <div className="mt-1 text-sm text-rose-800/90">{children}</div>}
           {actions && <div className="mt-4 flex flex-wrap gap-2">{actions}</div>}
         </div>
@@ -171,7 +176,7 @@ export function Notice({ children, tone = "info" }: { children: ReactNode; tone?
 }
 
 export function BulletList({ items, className, icon }: { items?: string[]; className?: string; icon?: ReactNode }) {
-  if (!items?.length) return <p className="text-sm text-slate-400">Not provided.</p>;
+  if (!items?.length) return <p className="text-sm text-slate-400">{t("Not provided.")}</p>;
   return (
     <ul className={cx("space-y-2", className)}>
       {items.map((t, i) => (
@@ -187,38 +192,38 @@ export function BulletList({ items, className, icon }: { items?: string[]; class
 /** Wraps pages that need a completed analysis for the current business. */
 export function NeedsAnalysis({ ctx, children }: { ctx: { loading: boolean; ai: any; analysis: any; idea: any; error: string | null }; children: ReactNode }) {
   if (ctx.loading) return <LoadingBlock label="Loading your business…" />;
-  if (ctx.error) return <ErrorBox title="Could not load this business">{ctx.error}</ErrorBox>;
+  if (ctx.error) return <ErrorBox title={t("Could not load this business")}>{ctx.error}</ErrorBox>;
   if (!ctx.idea) {
     return (
       <EmptyState
-        title="No Business Idea Analyzed Yet"
-        body="Describe your business idea and Startup Sense will run a real AI analysis for your location and budget."
-        action={<Link to="/new" className={cx("btn-primary", SIZE.md)}><Sparkles className="h-4 w-4" /> Analyze Your First Idea</Link>}
+        title={t("No Business Idea Analyzed Yet")}
+        body={t("Describe your business idea and Startup Sense will run a real AI analysis for your location and budget.")}
+        action={<Link to="/new" className={cx("btn-primary", SIZE.md)}><Sparkles className="h-4 w-4" /> {t("Analyze Your First Idea")}</Link>}
       />
     );
   }
   if (ctx.analysis?.status === "queued" || ctx.analysis?.status === "running") {
     return (
       <EmptyState
-        title={`Analysis in progress: ${ctx.idea.businessName}`}
-        body="The AI is still working on this business. Results will appear here as soon as it finishes."
+        title={t("Analysis in progress: {name}", { name: ctx.idea.businessName })}
+        body={t("The AI is still working on this business. Results will appear here as soon as it finishes.")}
         icon={<Spinner className="h-7 w-7" />}
-        action={<Link to={`/analyzing/${ctx.idea.id}?analysisId=${ctx.analysis.id}`} className={cx("btn-primary", SIZE.md)}>View progress</Link>}
+        action={<Link to={`/analyzing/${ctx.idea.id}?analysisId=${ctx.analysis.id}`} className={cx("btn-primary", SIZE.md)}>{t("View progress")}</Link>}
       />
     );
   }
   if (!ctx.ai) {
     return (
       <ErrorBox
-        title="AI analysis could not be completed."
+        title={t("AI analysis could not be completed.")}
         actions={
           <>
-            <Link to={`/analyzing/${ctx.idea.id}?retry=1`} className={cx("btn-primary", SIZE.md)}>Retry Analysis</Link>
-            <Link to="/new" className={cx("btn-secondary", SIZE.md)}>Back to New Idea</Link>
+            <Link to={`/analyzing/${ctx.idea.id}?retry=1`} className={cx("btn-primary", SIZE.md)}>{t("Retry Analysis")}</Link>
+            <Link to="/new" className={cx("btn-secondary", SIZE.md)}>{t("Back to New Idea")}</Link>
           </>
         }
       >
-        The latest analysis for “{ctx.idea.businessName}” did not finish. {ctx.analysis?.error ? <span className="block mt-1 text-xs opacity-80">{ctx.analysis.error}</span> : null}
+        {t("The latest analysis for “{name}” did not finish.", { name: ctx.idea.businessName })} {ctx.analysis?.error ? <span className="block mt-1 text-xs opacity-80">{ctx.analysis.error}</span> : null}
       </ErrorBox>
     );
   }
@@ -231,7 +236,7 @@ export function ScoreRing({ score, size = 120 }: { score: number; size?: number 
   const pct = Math.max(0, Math.min(1, score / 10));
   const color = score >= 7.5 ? "#10b981" : score >= 6 ? "#6366f1" : score >= 4.5 ? "#f59e0b" : "#f43f5e";
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`AI validation score ${score} out of 10`}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={t("AI validation score {score} out of 10", { score })}>
       <circle cx={size / 2} cy={size / 2} r={r} stroke="#e2e8f0" strokeWidth="10" fill="none" />
       <circle
         cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth="10" fill="none" strokeLinecap="round"

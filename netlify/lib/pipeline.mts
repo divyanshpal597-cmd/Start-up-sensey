@@ -1,14 +1,14 @@
 // The analysis pipeline, run inside the background worker.
 import { db } from "./db.mts";
 import { AIError, generateJSON } from "./gemini.mts";
-import { SYSTEM, pivotPrompt, step1Prompt, step2Prompt, step3Prompt } from "./prompts.mts";
+import { systemFor, pivotPrompt, step1Prompt, step2Prompt, step3Prompt } from "./prompts.mts";
 import {
   arr, calculate, cleanKeywords, cleanOsmTags, computeScore, driversFromFinancials, normalizeFinancials,
   normalizeRisks, num, str, strArr,
 } from "./finance.mts";
 import { findNearby, geocode, type SearchTarget } from "./places.mts";
 import type { IdeaInput } from "./validate.mts";
-import { CURRENCIES } from "./validate.mts";
+import { CURRENCIES, cleanLanguage } from "./validate.mts";
 
 export const STAGES = [
   "Understanding business idea...",
@@ -39,6 +39,8 @@ function inputFromIdea(idea: any): IdeaInput {
     sellingPrice: str(u.sellingPrice),
     category: str(u.category),
     additionalInfo: str(u.additionalInfo),
+    language: cleanLanguage(u.language),
+    transcript: str(u.transcript) || undefined,
   };
 }
 
@@ -102,12 +104,13 @@ export async function searchCompetitors(ai: any, geo: { lat: number; lng: number
   return { ...found, keywords: cleanKeywords(targets[0].keywords), osmTags: cleanOsmTags(targets[0].osmTags) };
 }
 
-export async function runAnalysis(p: { analysisId: string; ideaId: string; ownerHash: string; simulateFailure?: boolean }) {
+export async function runAnalysis(p: { analysisId: string; ideaId: string; ownerHash: string; simulateFailure?: boolean; language?: string }) {
   const { analysisId, ideaId, ownerHash } = p;
   const record = await db.getIdea(ownerHash, ideaId, analysisId);
   if (!record?.idea) throw new Error("Idea not found for analysis");
   const idea = record.idea;
   const input = inputFromIdea(idea);
+  if (p.language) input.language = cleanLanguage(p.language);
   const cur = CURRENCIES[input.currency] || CURRENCIES.INR;
 
   try {
@@ -115,11 +118,11 @@ export async function runAnalysis(p: { analysisId: string; ideaId: string; owner
     const geo = await ensureGeo(idea, input);
 
     // Step 1 — overview, customers, market
-    const s1 = await generateJSON<any>({ system: SYSTEM, prompt: step1Prompt(input), forceInvalidModel: p.simulateFailure });
+    const s1 = await generateJSON<any>({ system: systemFor(input.language), prompt: step1Prompt(input), forceInvalidModel: p.simulateFailure });
     await stage(analysisId, 3);
 
     // Step 2 — competition, SWOT, financials, risks
-    const s2 = await generateJSON<any>({ system: SYSTEM, prompt: step2Prompt(input, s1.data) });
+    const s2 = await generateJSON<any>({ system: systemFor(input.language), prompt: step2Prompt(input, s1.data) });
     await stage(analysisId, 5);
 
     const financialAnalysis = normalizeFinancials(s2.data.financialAnalysis);
@@ -133,12 +136,13 @@ export async function runAnalysis(p: { analysisId: string; ideaId: string; owner
       swot: s2.data.swot,
       topRisks: s2.data.risks,
     };
-    const s3 = await generateJSON<any>({ system: SYSTEM, prompt: step3Prompt(input, digest, { ...financialAnalysis, calculated: calc }) });
+    const s3 = await generateJSON<any>({ system: systemFor(input.language), prompt: step3Prompt(input, digest, { ...financialAnalysis, calculated: calc }) });
     await stage(analysisId, 6);
 
     const ov = s1.data.businessOverview || {};
     const ai: any = {
       meta: {
+        language: input.language,
         currency: input.currency,
         currencySymbol: cur.symbol,
         locale: cur.locale,
@@ -255,6 +259,8 @@ export async function runJob(p: { type: string; analysisId: string; ideaId: stri
   const idea = record.idea;
   const ai = record.analysis.aiAnalysis;
   const input = inputFromIdea(idea);
+  if (p.params?.language) input.language = cleanLanguage(p.params.language);
+  else if (ai?.meta?.language) input.language = cleanLanguage(ai.meta.language);
   const geo = typeof idea.latitude === "number" ? { lat: idea.latitude, lng: idea.longitude } : await ensureGeo(idea, input);
   const job = p.type;
   const setJob = (v: Record<string, unknown>) =>
@@ -279,7 +285,7 @@ export async function runJob(p: { type: string; analysisId: string; ideaId: stri
         swot: ai.swot,
         recommendation: ai.recommendation?.verdict,
       };
-      const r = await generateJSON<any>({ system: SYSTEM, prompt: pivotPrompt(input, digest), maxOutputTokens: 8192 });
+      const r = await generateJSON<any>({ system: systemFor(input.language), prompt: pivotPrompt(input, digest), maxOutputTokens: 8192 });
       const items = arr(r.data?.pivots)
         .map((x: any) => ({
           name: str(x?.name), model: str(x?.model), description: str(x?.description),

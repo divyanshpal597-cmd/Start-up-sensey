@@ -6,6 +6,7 @@ import { mapsSearch } from "../lib/format";
 import PlaceCard from "../components/PlaceCard";
 import PlacesMap from "../components/PlacesMap";
 import { Card, ErrorBox, NeedsAnalysis, Notice, PageHeader, Pill, SIZE, Spinner, Tag, cx } from "../components/ui";
+import { t } from "../lib/i18n";
 
 const TYPES = ["Manufacturers", "Factories", "Raw Material Suppliers", "Wholesalers", "Distributors", "Dealers", "Unclassified"];
 
@@ -66,8 +67,8 @@ function Body() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Smart Supply Chain Finder"
-        title={`Supply chain for ${ai.businessOverview?.businessName}`}
-        subtitle={`Materials identified by AI for this business, and the nearest real sources to ${idea.location} from live map data.`}
+        title={t("Supply chain for {name}", { name: ai.businessOverview?.businessName })}
+        subtitle={t("Materials identified by AI for this business, and the nearest real sources to {loc} from live map data.", { loc: idea.location })}
       />
 
       <Card title="Required raw materials & resources" subtitle={sc.summary} icon={<Package className="h-4 w-4" />} action={<Tag kind="ai" label="Identified by AI" />}>
@@ -82,12 +83,12 @@ function Body() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="font-semibold text-slate-900" data-testid="material-name">{mat.name}</div>
-                  <Pill className="bg-slate-100 text-slate-600 ring-slate-200">{mat.category}</Pill>
+                  <Pill className="bg-slate-100 text-slate-600 ring-slate-200">{t(mat.category)}</Pill>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">{mat.description}</p>
                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
-                  {mat.estimatedQuantity && <span><b>Qty:</b> {mat.estimatedQuantity}</span>}
-                  {mat.estimatedCost && <span><b>Est. cost:</b> {mat.estimatedCost} <span className="text-violet-600">(AI Estimate)</span></span>}
+                  {mat.estimatedQuantity && <span><b>{t("Qty:")}</b> {mat.estimatedQuantity}</span>}
+                  {mat.estimatedCost && <span><b>{t("Est. cost:")}</b> {mat.estimatedCost} <span className="text-violet-600">({t("AI Estimate")})</span></span>}
                 </div>
                 <div className="mt-2 text-xs font-semibold text-indigo-600">{count} live source{count === 1 ? "" : "s"} found</div>
               </button>
@@ -99,74 +100,74 @@ function Body() {
       {data.status === "unavailable" ? (
         <ErrorBox
           title="Live supplier search is temporarily unavailable."
-          actions={<button onClick={() => start({ radiusKm: radius })} disabled={running} className={cx("btn-primary", SIZE.md)}>{running ? <Spinner /> : <RefreshCw className="h-4 w-4" />} Try again</button>}
+          actions={<button onClick={() => start({ radiusKm: radius })} disabled={running} className={cx("btn-primary", SIZE.md)}>{running ? <Spinner /> : <RefreshCw className="h-4 w-4" />} {t("Try again")}</button>}
         >
-          No supplier listings are shown because the live data source could not be reached. Nothing has been invented in their place.
+          {t("No supplier listings are shown because the live data source could not be reached. Nothing has been invented in their place.")}
           {data.errors?.length ? <span className="mt-1 block text-xs opacity-75">{data.errors.join(" · ")}</span> : null}
         </ErrorBox>
       ) : (
         <>
           <Card
             title="Nearest raw material sources"
-            subtitle={`${results.length} live listings within ${data.radiusKm} km · Sources: ${(data.sources || []).join(" + ") || "—"}${data.autoExpanded ? " · radius widened automatically" : ""}`}
+            subtitle={t("{n} live listings within {r} km · Sources: {s}", { n: results.length, r: data.radiusKm, s: (data.sources || []).join(" + ") || "—" }) + (data.autoExpanded ? ` · ${t("radius widened automatically")}` : "")}
             icon={<Boxes className="h-4 w-4" />}
             action={
               <div className="flex items-center gap-2">
-                <select className="input w-28 py-1.5 text-xs" value={radius} onChange={(e) => setRadius(Number(e.target.value))} aria-label="Search radius">
+                <select className="input w-28 py-1.5 text-xs" value={radius} onChange={(e) => setRadius(Number(e.target.value))} aria-label={t("Search radius")}>
                   {[5, 10, 20, 25, 40, 50, 60].map((r) => <option key={r} value={r}>{r} km</option>)}
                 </select>
                 <button onClick={() => start({ radiusKm: radius })} disabled={running} className={cx("btn-primary", SIZE.sm)}>
-                  {running ? <Spinner className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />} {running ? "Searching…" : "Search again"}
+                  {running ? <Spinner className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />} {running ? t("Searching…") : t("Search again")}
                 </button>
               </div>
             }
           >
             {error && <div className="mb-3"><Notice tone="warn">{error}</Notice></div>}
-            {data.status === "partial" && <div className="mb-3"><Notice tone="warn">Some data sources failed: {(data.errors || []).join(" · ")}</Notice></div>}
+            {data.status === "partial" && <div className="mb-3"><Notice tone="warn">{t("Some data sources failed:")} {(data.errors || []).join(" · ")}</Notice></div>}
             {!data.googleEnabled && (
-              <div className="mb-3"><Notice>Listings come from OpenStreetMap. Many small Indian suppliers are not mapped with phone numbers — add a Google Places key in Settings for richer contact data.</Notice></div>
+              <div className="mb-3"><Notice>{t("Listings come from OpenStreetMap. Many small Indian suppliers are not mapped with phone numbers — add a Google Places key in Settings for richer contact data.")}</Notice></div>
             )}
             {origin && <PlacesMap center={origin} places={filtered.slice(0, 80)} radiusKm={data.radiusKm} highlightId={hover} />}
           </Card>
 
           <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
             <aside className="card h-max space-y-4 p-4 lg:sticky lg:top-20">
-              <div className="flex items-center gap-2 font-semibold text-slate-900"><Filter className="h-4 w-4" /> Filters</div>
+              <div className="flex items-center gap-2 font-semibold text-slate-900"><Filter className="h-4 w-4" /> {t("Filters")}</div>
               <div>
-                <label className="label text-xs">Max distance: {maxKm} km</label>
+                <label className="label text-xs">{t("Max distance: {n} km", { n: maxKm })}</label>
                 <input type="range" min={1} max={Math.max(5, Math.ceil(data.radiusKm || 60))} value={maxKm} onChange={(e) => setMaxKm(Number(e.target.value))} className="w-full" />
               </div>
               <div>
-                <label className="label text-xs">Supplier type</label>
+                <label className="label text-xs">{t("Supplier type")}</label>
                 <select className="input py-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
-                  <option value="">All types</option>
-                  {TYPES.map((t) => <option key={t} value={t}>{t} ({typeCounts[t] || 0})</option>)}
+                  <option value="">{t("All types")}</option>
+                  {TYPES.map((ty) => <option key={ty} value={ty}>{t(ty)} ({typeCounts[ty] || 0})</option>)}
                 </select>
               </div>
               <div>
-                <label className="label text-xs">Raw material</label>
+                <label className="label text-xs">{t("Raw material")}</label>
                 <select className="input py-2 text-sm" value={material} onChange={(e) => setMaterial(e.target.value)}>
-                  <option value="">All materials</option>
+                  <option value="">{t("All materials")}</option>
                   {(sc.materials || []).map((m: any) => <option key={m.name} value={m.name}>{m.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="label text-xs">Price</label>
-                <select className="input py-2 text-sm" disabled><option>No verified price data</option></select>
-                <p className="mt-1 text-[11px] text-slate-400">Sources don’t publish prices. Request quotes directly.</p>
+                <label className="label text-xs">{t("Price")}</label>
+                <select className="input py-2 text-sm" disabled><option>{t("No verified price data")}</option></select>
+                <p className="mt-1 text-[11px] text-slate-400">{t("Sources don’t publish prices. Request quotes directly.")}</p>
               </div>
               <div>
-                <label className="label text-xs">Minimum rating {hasRatings ? "" : "(no verified ratings)"}</label>
+                <label className="label text-xs">{t("Minimum rating")} {hasRatings ? "" : t("(no verified ratings)")}</label>
                 <select className="input py-2 text-sm" disabled={!hasRatings} value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}>
-                  {[0, 3, 3.5, 4, 4.5].map((r) => <option key={r} value={r}>{r ? `${r}+` : "Any"}</option>)}
+                  {[0, 3, 3.5, 4, 4.5].map((r) => <option key={r} value={r}>{r ? `${r}+` : t("Any")}</option>)}
                 </select>
               </div>
               <label className={cx("flex items-center gap-2 text-sm", !hasOpen && "text-slate-400")}>
                 <input type="checkbox" disabled={!hasOpen} checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} />
-                Open now only {hasOpen ? "" : "(not verified)"}
+                {t("Open now only")} {hasOpen ? "" : t("(not verified)")}
               </label>
               <div>
-                <label className="label text-xs">Sort by</label>
+                <label className="label text-xs">{t("Sort by")}</label>
                 <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 text-xs">
                   {([
                     ["nearest", "Nearest"],
@@ -176,30 +177,30 @@ function Body() {
                     <button
                       key={k}
                       disabled={k === "price" && !hasPrice}
-                      title={k === "price" && !hasPrice ? "No price data is available, so we can't rank by price" : undefined}
+                      title={k === "price" && !hasPrice ? t("No price data is available, so we can't rank by price") : undefined}
                       onClick={() => setSort(k)}
                       className={cx("rounded-lg px-1 py-1.5 font-semibold disabled:cursor-not-allowed disabled:text-slate-300", sort === k ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600")}
                     >
-                      {l}
+                      {t(l)}
                     </button>
                   ))}
                 </div>
               </div>
               {(type || material || maxKm < (data.radiusKm || 60) || minRating || openOnly) && (
-                <button className={cx("btn-ghost w-full", SIZE.sm)} onClick={() => { setType(""); setMaterial(""); setMaxKm(Math.ceil(data.radiusKm || 60)); setMinRating(0); setOpenOnly(false); }}>Clear filters</button>
+                <button className={cx("btn-ghost w-full", SIZE.sm)} onClick={() => { setType(""); setMaterial(""); setMaxKm(Math.ceil(data.radiusKm || 60)); setMinRating(0); setOpenOnly(false); }}>{t("Clear filters")}</button>
               )}
             </aside>
 
             <div className="space-y-3" data-testid="supplier-results">
               <div className="flex items-center justify-between text-sm text-slate-500">
-                <span>Showing <b className="text-slate-900">{filtered.length}</b> of {results.length} sources · {sort === "nearest" ? "nearest first" : sort === "match" ? "best match first" : "lowest price first"}</span>
+                <span>{t("Showing {a} of {b} sources", { a: filtered.length, b: results.length })} · {sort === "nearest" ? t("nearest first") : sort === "match" ? t("best match first") : t("lowest price first")}</span>
               </div>
               {filtered.map((p, i) => (
                 <PlaceCard key={p.id} p={p} rank={i + 1} origin={origin} onHover={setHover} />
               ))}
               {!filtered.length && (
                 <div className="card p-6 text-center text-sm text-slate-500">
-                  {results.length ? "No sources match these filters." : "No matching suppliers were found in live map data for this area."}
+                  {results.length ? t("No sources match these filters.") : t("No matching suppliers were found in live map data for this area.")}
                 </div>
               )}
             </div>
@@ -224,7 +225,7 @@ function Body() {
         <div className="mt-4 flex flex-wrap gap-2">
           {(sc.materials || []).slice(0, 6).map((m: any) => (
             <a key={m.name} href={mapsSearch(`${m.name} supplier near ${idea.city}`)} target="_blank" rel="noopener noreferrer" className={cx("btn-secondary", SIZE.sm)}>
-              <ExternalLink className="h-3.5 w-3.5" /> Search “{m.name}” on Google Maps
+              <ExternalLink className="h-3.5 w-3.5" /> {t("Search “{x}” on Google Maps", { x: m.name })}
             </a>
           ))}
         </div>

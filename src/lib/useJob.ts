@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Api } from "./api";
 import { useCurrentIdea, usePolling } from "../context/CurrentIdea";
+import { getLang } from "./i18n";
 
 /** Starts a background job (suppliers / competitors / pivots) and polls until it finishes. */
 export function useJob(type: "suppliers" | "competitors" | "pivots") {
@@ -19,7 +20,7 @@ export function useJob(type: "suppliers" | "competitors" | "pivots") {
     setStartError(null);
     setStarting(true);
     try {
-      await Api.runJob(idea.id, { type, analysisId: analysis.id, ...params });
+      await Api.runJob(idea.id, { type, analysisId: analysis.id, language: getLang(), ...params });
       await refresh();
     } catch (e) {
       setStartError((e as Error).message);

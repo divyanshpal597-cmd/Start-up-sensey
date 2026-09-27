@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
+import { t } from "../lib/i18n";
 
 export default function PlacesMap({
   center,
@@ -39,7 +40,7 @@ export default function PlacesMap({
     if (!m || !g) return;
     g.clearLayers();
     L.circleMarker([center.lat, center.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#0f172a", fillOpacity: 1 })
-      .bindTooltip("Your business location", { direction: "top" })
+      .bindTooltip(t("Your business location"), { direction: "top" })
       .addTo(g);
     if (radiusKm) {
       L.circle([center.lat, center.lng], { radius: radiusKm * 1000, color: "#6366f1", weight: 1, fillOpacity: 0.03, dashArray: "4 4" }).addTo(g);
@@ -54,7 +55,7 @@ export default function PlacesMap({
         fillColor: hl ? "#f59e0b" : p.source === "Google Places" ? "#10b981" : "#6366f1",
         fillOpacity: 0.95,
       })
-        .bindTooltip(`${i + 1}. ${p.name} · ${p.distanceKm} km`, { direction: "top" })
+        .bindTooltip(`${i + 1}. ${p.name} · ${t("{n} km away", { n: p.distanceKm })}`, { direction: "top" })
         .addTo(g);
       pts.push([p.lat, p.lng]);
     });

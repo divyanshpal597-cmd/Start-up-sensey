@@ -6,7 +6,7 @@ import { aiConfigured } from "../lib/gemini.mts";
 import {
   HttpError, assertSameOrigin, assertUuid, env, errorResponse, json, ownerHash, readJson, triggerWorker,
 } from "../lib/http.mts";
-import { validateIdea } from "../lib/validate.mts";
+import { cleanLanguage, validateIdea } from "../lib/validate.mts";
 
 export default async (req: Request, context: Context) => {
   try {
@@ -24,10 +24,12 @@ export default async (req: Request, context: Context) => {
     const m = url.pathname.match(/^\/api\/ideas\/([^/]+)\/reanalyze$/);
     let ids: { ideaId: string; analysisId: string };
     let simulateFailure = false;
+    let language: string | undefined;
     if (m) {
       const ideaId = assertUuid(m[1], "idea id");
       const body = await readJson(req).catch(() => ({}));
       simulateFailure = body?.simulateFailure === true;
+      if (body?.language) language = cleanLanguage(body.language);
       ids = await db.startAnalysis(owner, ideaId);
     } else {
       const input = validateIdea(await readJson(req));
@@ -37,7 +39,7 @@ export default async (req: Request, context: Context) => {
     }
     if (simulateFailure && env("ALLOW_FAILURE_TEST") === "false") simulateFailure = false;
 
-    await triggerWorker(req, { type: "analyze", ...ids, ownerHash: owner, simulateFailure });
+    await triggerWorker(req, { type: "analyze", ...ids, ownerHash: owner, simulateFailure, language });
     return json({ ...ids, status: "queued" }, 202);
   } catch (e) {
     return errorResponse(e);

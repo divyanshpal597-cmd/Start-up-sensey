@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart3, Boxes, Calculator, ChevronDown, FileText, FlaskConical, Gauge, GitBranch, LayoutDashboard, Lightbulb,
-  Menu, Radar, Settings, ShieldAlert, Sparkles, Swords, Users, X,
+  Languages, Menu, Radar, Settings, ShieldAlert, Sparkles, Swords, Users, X,
 } from "lucide-react";
 import { useCurrentIdea } from "../context/CurrentIdea";
 import { cx, SIZE } from "./ui";
+import { LANGS, getLang, setLang, t, type Lang } from "../lib/i18n";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -34,7 +35,7 @@ function Brand() {
       </div>
       <div>
         <div className="font-display text-[15px] font-extrabold tracking-wide text-white">STARTUP SENSE</div>
-        <div className="text-[11px] text-indigo-200/80">Validate Before You Invest.</div>
+        <div className="text-[11px] text-indigo-200/80">{t("Validate Before You Invest.")}</div>
       </div>
     </Link>
   );
@@ -47,7 +48,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="mt-7 flex-1 space-y-0.5 overflow-y-auto">
         {NAV.map((n, i) =>
           "section" in n ? (
-            <div key={i} className="px-3 pb-1.5 pt-5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{n.section}</div>
+            <div key={i} className="px-3 pb-1.5 pt-5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{t(n.section)}</div>
           ) : (
             <NavLink
               key={n.to}
@@ -64,7 +65,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               {({ isActive }) => (
                 <>
                   <n.icon className={cx("h-4 w-4", isActive ? "text-indigo-300" : "text-slate-500 group-hover:text-slate-300")} />
-                  {n.label}
+                  {t(n.label)}
                 </>
               )}
             </NavLink>
@@ -72,9 +73,34 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         )}
       </nav>
       <div className="mt-4 rounded-xl bg-white/5 p-3 text-[11px] leading-relaxed text-slate-400">
-        AI figures are estimates. Supplier listings come from live map data.
+        {t("AI figures are estimates. Supplier listings come from live map data.")}
       </div>
     </div>
+  );
+}
+
+export function LanguageSelect({ className }: { className?: string }) {
+  const [lang, setL] = useState<Lang>(getLang());
+  return (
+    <label className={cx("flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm shadow-sm", className)} title={t("Language")}>
+      <Languages className="h-4 w-4 text-indigo-500" />
+      <span className="sr-only">{t("Language")}</span>
+      <select
+        data-testid="language-select"
+        aria-label={t("Language")}
+        value={lang}
+        onChange={(e) => {
+          const l = e.target.value as Lang;
+          setL(l);
+          setLang(l);
+        }}
+        className="bg-transparent font-medium text-slate-800 outline-none"
+      >
+        {LANGS.map((l) => (
+          <option key={l.id} value={l.id}>{l.label}</option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -86,8 +112,8 @@ function BusinessSwitcher() {
   return (
     <div className="relative">
       <button onClick={() => setOpen((o) => !o)} className="flex max-w-[60vw] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-slate-50">
-        <span className="hidden text-slate-500 sm:inline">Current business:</span>
-        <span className="truncate font-semibold text-slate-900">{idea?.businessName || "Select…"}</span>
+        <span className="hidden text-slate-500 sm:inline">{t("Current business:")}</span>
+        <span className="truncate font-semibold text-slate-900">{idea?.businessName || t("Select…")}</span>
         <ChevronDown className="h-4 w-4 text-slate-400" />
       </button>
       {open && (
@@ -107,14 +133,14 @@ function BusinessSwitcher() {
                 >
                   <div className="min-w-0">
                     <div className="truncate font-medium text-slate-900">{i.businessName}</div>
-                    <div className="truncate text-xs text-slate-500">{i.city} · {i.analysis?.status === "complete" ? `Score ${Number(i.analysis.score).toFixed(1)}` : i.analysis?.status}</div>
+                    <div className="truncate text-xs text-slate-500">{i.city} · {i.analysis?.status === "complete" ? `${t("Score")} ${Number(i.analysis.score).toFixed(1)}` : t(i.analysis?.status || "")}</div>
                   </div>
-                  {i.id === idea?.id && <span className="text-xs font-semibold text-indigo-600">Current</span>}
+                  {i.id === idea?.id && <span className="text-xs font-semibold text-indigo-600">{t("Current")}</span>}
                 </button>
               ))}
             </div>
             <Link to="/ideas" onClick={() => setOpen(false)} className="block border-t border-slate-100 px-4 py-2.5 text-sm font-medium text-indigo-600 hover:bg-slate-50">
-              Manage all ideas →
+              {t("Manage all ideas →")}
             </Link>
           </div>
         </>
@@ -137,7 +163,7 @@ export default function Layout() {
           <div className="absolute inset-0 bg-slate-900/50" onClick={() => setMobileOpen(false)} />
           <div className="absolute inset-y-0 left-0 w-72">
             <Sidebar onNavigate={() => setMobileOpen(false)} />
-            <button onClick={() => setMobileOpen(false)} className="absolute right-3 top-5 text-slate-300" aria-label="Close menu">
+            <button onClick={() => setMobileOpen(false)} className="absolute right-3 top-5 text-slate-300" aria-label={t("Close menu")}>
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -146,17 +172,18 @@ export default function Layout() {
       <header className="no-print sticky top-0 z-20 border-b border-slate-200/70 bg-canvas/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 md:px-8">
           <div className="flex items-center gap-3">
-            <button className="rounded-lg p-2 text-slate-600 hover:bg-slate-200/60 lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+            <button className="rounded-lg p-2 text-slate-600 hover:bg-slate-200/60 lg:hidden" onClick={() => setMobileOpen(true)} aria-label={t("Open menu")}>
               <Menu className="h-5 w-5" />
             </button>
             <div className="hidden items-center gap-2 text-sm text-slate-500 md:flex">
-              <Gauge className="h-4 w-4 text-indigo-500" /> AI Business Validator
+              <Gauge className="h-4 w-4 text-indigo-500" /> {t("AI Business Validator")}
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSelect />
             <BusinessSwitcher />
             <Link to="/new" className={cx("btn-primary hidden sm:inline-flex", SIZE.md)}>
-              <Sparkles className="h-4 w-4" /> Analyze idea
+              <Sparkles className="h-4 w-4" /> {t("Analyze idea")}
             </Link>
           </div>
         </div>

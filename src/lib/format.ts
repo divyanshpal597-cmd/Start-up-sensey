@@ -1,3 +1,4 @@
+import { getLang, t } from "./i18n";
 export type Money = { currency: string; locale: string };
 
 export function moneyOf(idea: any, analysis?: any): Money {
@@ -42,17 +43,17 @@ export function fmtPct(n: number | null | undefined, dp = 1) {
 }
 
 export function fmtMonths(n: number | null | undefined) {
-  if (n === null || n === undefined || !Number.isFinite(Number(n))) return "Not reached";
+  if (n === null || n === undefined || !Number.isFinite(Number(n))) return t("Not reached");
   const v = Number(n);
-  if (v < 1) return `${Math.max(1, Math.round(v * 30))} days`;
-  if (v > 120) return "10+ years";
-  return `${v.toFixed(1)} months`;
+  if (v < 1) return t("{n} days", { n: Math.max(1, Math.round(v * 30)) });
+  if (v > 120) return t("10+ years");
+  return t("{n} months", { n: v.toFixed(1) });
 }
 
 export function fmtDate(s: string | null | undefined) {
   if (!s) return "—";
   const d = new Date(s);
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString(getLang() === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export function fmtDateTime(s: string | null | undefined) {
@@ -62,10 +63,10 @@ export function fmtDateTime(s: string | null | undefined) {
 
 export function scoreTone(score: number | null | undefined) {
   const s = Number(score ?? 0);
-  if (s >= 7.5) return { text: "text-emerald-600", bg: "bg-emerald-500", soft: "bg-emerald-50 text-emerald-700 ring-emerald-200", label: "Strong" };
-  if (s >= 6) return { text: "text-indigo-600", bg: "bg-indigo-500", soft: "bg-indigo-50 text-indigo-700 ring-indigo-200", label: "Promising" };
-  if (s >= 4.5) return { text: "text-amber-600", bg: "bg-amber-500", soft: "bg-amber-50 text-amber-700 ring-amber-200", label: "Needs work" };
-  return { text: "text-rose-600", bg: "bg-rose-500", soft: "bg-rose-50 text-rose-700 ring-rose-200", label: "Weak" };
+  if (s >= 7.5) return { text: "text-emerald-600", bg: "bg-emerald-500", soft: "bg-emerald-50 text-emerald-700 ring-emerald-200", label: t("Strong") };
+  if (s >= 6) return { text: "text-indigo-600", bg: "bg-indigo-500", soft: "bg-indigo-50 text-indigo-700 ring-indigo-200", label: t("Promising") };
+  if (s >= 4.5) return { text: "text-amber-600", bg: "bg-amber-500", soft: "bg-amber-50 text-amber-700 ring-amber-200", label: t("Needs work") };
+  return { text: "text-rose-600", bg: "bg-rose-500", soft: "bg-rose-50 text-rose-700 ring-rose-200", label: t("Weak") };
 }
 
 export function levelTone(level: string | undefined) {

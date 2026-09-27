@@ -30,6 +30,12 @@ interface CallOpts {
   maxOutputTokens?: number;
   /** Used only by the explicit "simulate AI failure" test: forces a real API error. */
   forceInvalidModel?: boolean;
+  /** Override the model order (e.g. a faster model for quick extraction). */
+  models?: string[];
+  /** Per-request timeout in ms. */
+  timeoutMs?: number;
+  /** Max attempts per model. */
+  attempts?: number;
 }
 
 export interface AIResult<T> {
@@ -42,12 +48,12 @@ export async function generateJSON<T = any>(opts: CallOpts): Promise<AIResult<T>
   const key = env("GEMINI_API_KEY");
   if (!key) throw new AIError("AI is not configured on the server.", "GEMINI_API_KEY is not set.");
 
-  const models = opts.forceInvalidModel ? ["startup-sense-simulated-failure-model"] : modelList();
+  const models = opts.forceInvalidModel ? ["startup-sense-simulated-failure-model"] : opts.models || modelList();
   let lastErr = "";
 
   for (const model of models) {
     let useThinking = true;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < (opts.attempts ?? 3); attempt++) {
       const generationConfig: Record<string, unknown> = {
         responseMimeType: "application/json",
         maxOutputTokens: opts.maxOutputTokens ?? 16384,
@@ -63,7 +69,7 @@ export async function generateJSON<T = any>(opts: CallOpts): Promise<AIResult<T>
             contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
             generationConfig,
           }),
-          signal: AbortSignal.timeout(180_000),
+          signal: AbortSignal.timeout(opts.timeoutMs ?? 180_000),
         });
       } catch (e: any) {
         lastErr = `network: ${e?.message || e}`;

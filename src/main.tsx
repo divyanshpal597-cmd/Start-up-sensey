@@ -1,4 +1,5 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect, useState } from "react";
+import { applyDocumentLang, getLang, onLangChange } from "./lib/i18n";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
@@ -23,9 +24,15 @@ import SettingsPage from "./pages/Settings";
 import SharedReport from "./pages/SharedReport";
 import NotFound from "./pages/NotFound";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <BrowserRouter>
+/** Re-renders the whole app when the language changes (routes, saved data and server state are kept). */
+function LanguageRoot() {
+  const [lang, setLangState] = useState(getLang());
+  useEffect(() => {
+    applyDocumentLang();
+    return onLangChange(setLangState);
+  }, []);
+  return (
+    <BrowserRouter key={lang}>
       <Routes>
         <Route path="/share/:token" element={<SharedReport />} />
         <Route
@@ -54,5 +61,11 @@ createRoot(document.getElementById("root")!).render(
         </Route>
       </Routes>
     </BrowserRouter>
+  );
+}
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <LanguageRoot />
   </StrictMode>
 );
