@@ -69,7 +69,7 @@ export default function MyIdeas() {
             {list.map((i) => {
               const a = i.analysis;
               const complete = a?.status === "complete";
-              const t = scoreTone(a?.score);
+              const tone = scoreTone(a?.score);
               return (
                 <div key={i.id} data-testid="idea-card" className={cx("card flex flex-col p-5 transition hover:shadow-md", i.id === ideaId && "ring-2 ring-indigo-300")}>
                   <div className="flex items-start justify-between gap-3">
@@ -78,7 +78,7 @@ export default function MyIdeas() {
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-500"><MapPin className="h-3.5 w-3.5" /> {i.city}{i.state ? `, ${i.state}` : ""}</div>
                     </button>
                     {complete ? (
-                      <div className={cx("rounded-xl px-2.5 py-1.5 text-center ring-1 ring-inset", t.soft)}>
+                      <div className={cx("rounded-xl px-2.5 py-1.5 text-center ring-1 ring-inset", tone.soft)}>
                         <div className="text-[10px] font-semibold uppercase">{t("AI Score")}</div>
                         <div className="font-display text-lg font-extrabold leading-none">{Number(a.score).toFixed(1)}</div>
                       </div>

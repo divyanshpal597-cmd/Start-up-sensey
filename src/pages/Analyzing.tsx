@@ -88,8 +88,8 @@ export default function Analyzing() {
 
   useEffect(() => {
     if (done) return;
-    const t = setInterval(() => setElapsed(Math.round((Date.now() - started.current) / 1000)), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setElapsed(Math.round((Date.now() - started.current) / 1000)), 1000);
+    return () => clearInterval(timer);
   }, [done, analysisId]);
 
   if (retrying) return <LoadingBlock label="Starting a new analysis…" />;

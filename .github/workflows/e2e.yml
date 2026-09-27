@@ -7,6 +7,10 @@ on:
     paths: [".ci/e2e-trigger"]
   workflow_dispatch:
 
+concurrency:
+  group: e2e
+  cancel-in-progress: true
+
 permissions:
   contents: write
   actions: read
