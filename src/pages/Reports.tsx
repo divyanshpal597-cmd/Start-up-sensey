@@ -6,7 +6,6 @@ import { exportElementToPdf } from "../lib/pdf";
 import ReportDocument from "../components/ReportDocument";
 import { NeedsAnalysis, Notice, PageHeader, SIZE, Spinner, cx } from "../components/ui";
 import { t } from "../lib/i18n";
-import ReadAloud from "../components/ReadAloud";
 
 export async function downloadPdf(name: string) {
   const el = document.getElementById("report");
@@ -80,7 +79,6 @@ function Body() {
             <>
               <button onClick={onPdf} disabled={pdfBusy} className={cx("btn-primary", SIZE.md)}>{pdfBusy ? <Spinner /> : <Download className="h-4 w-4" />} {t("Download PDF")}</button>
               <button onClick={() => window.print()} className={cx("btn-secondary", SIZE.md)}><Printer className="h-4 w-4" /> {t("Print")}</button>
-              <ReadAloud ai={ai} idea={idea} analysis={analysis} />
               <button onClick={onShare} disabled={shareBusy} className={cx("btn-secondary", SIZE.md)}>{shareBusy ? <Spinner /> : <Share2 className="h-4 w-4" />} {t("Share")}</button>
             </>
           }

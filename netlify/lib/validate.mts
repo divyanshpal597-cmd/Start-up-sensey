@@ -40,8 +40,6 @@ export interface IdeaInput {
   category: string;
   additionalInfo: string;
   language: Lang;
-  inputMethod?: "typed" | "voice";
-  transcript?: string;
   simulateFailure?: boolean;
 }
 
@@ -107,8 +105,6 @@ export function validateIdea(body: any): IdeaInput {
     category: clean(body.category, 100),
     additionalInfo: clean(body.additionalInfo, 2000),
     language: cleanLanguage(body.language),
-    inputMethod: body.inputMethod === "voice" ? "voice" : "typed",
-    transcript: clean(body.transcript, 3000) || undefined,
     simulateFailure: body.simulateFailure === true,
   };
 }

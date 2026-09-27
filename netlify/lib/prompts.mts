@@ -42,7 +42,6 @@ export function userBlock(input: IdeaInput, extra?: Record<string, unknown>) {
     sellingPrice: input.sellingPrice || "not specified — estimate a realistic one",
     category: input.category || "not specified — determine it",
     additionalInformation: input.additionalInfo || "none",
-    originalSpokenDescription: input.transcript || undefined,
     ...extra,
   };
   return `<user_data>\n${JSON.stringify(data, null, 2)}\n</user_data>`;

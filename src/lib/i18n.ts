@@ -4,10 +4,10 @@ import { HI, HINGLISH } from "./translations";
 import { setApiTranslator, storageGet, storageSet } from "./api";
 
 export type Lang = "en" | "hi" | "hinglish";
-export const LANGS: { id: Lang; label: string; speech: string; tts: string }[] = [
-  { id: "en", label: "English", speech: "en-IN", tts: "en-IN" },
-  { id: "hi", label: "हिंदी", speech: "hi-IN", tts: "hi-IN" },
-  { id: "hinglish", label: "Hinglish", speech: "hi-IN", tts: "en-IN" },
+export const LANGS: { id: Lang; label: string }[] = [
+  { id: "en", label: "English" },
+  { id: "hi", label: "हिंदी" },
+  { id: "hinglish", label: "Hinglish" },
 ];
 
 const KEY = "ss_language";

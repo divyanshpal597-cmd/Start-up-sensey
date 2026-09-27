@@ -27,10 +27,10 @@ Startup Sense takes a real business idea (idea, location, budget, customers, pri
 
 Each stage is written to the database, and the progress screen shows it live. If any AI step fails, the analysis is marked failed and the UI shows "AI analysis could not be completed." — no sample data is ever substituted.
 
-## Voice input & languages
-- **Voice:** the New Idea page has a microphone button (browser Web Speech API, `en-IN` or `hi-IN`). The transcript is sent to `/api/extract-idea`, where Gemini pulls out only the details actually spoken (idea, place, budget, price, customers…). Unclear amounts are left empty and flagged — never guessed. The user reviews/edits every field, then presses **Confirm & Analyze**, which uses the normal analysis pipeline. There is no list of allowed businesses or categories anywhere.
-- **Languages:** English, हिंदी and Hinglish. The choice is saved in the browser, translates the whole interface (`src/lib/translations.ts`), and is sent to the backend so Gemini writes the analysis directly in that language (`systemFor()` in `netlify/lib/prompts.mts`). Enum values and map-search keywords stay in English internally and are translated for display.
-- **Read aloud:** dashboard and report can read the analysis with the browser's SpeechSynthesis (never autoplays).
+## Languages
+- English, हिंदी and Hinglish. The choice is saved in the browser (it stays selected after a refresh), translates the whole interface (`src/lib/translations.ts`), and is sent to the backend so Gemini writes the analysis directly in that language (`systemFor()` in `netlify/lib/prompts.mts`). Nothing is translated from a fixed English response, and there is no list of allowed businesses or categories anywhere.
+- Enum values and map-search keywords stay in English internally and are translated for display.
+- If a saved analysis is in a different language from the one selected, the dashboard offers to generate a fresh analysis in the selected language.
 
 ## Environment variables (Netlify)
 

@@ -7,7 +7,7 @@ import { useCurrentIdea } from "../context/CurrentIdea";
 import { fmtDate, fmtMoney, fmtMonths, fmtPct, levelTone, competitionTone, moneyOf, scoreTone, verdictTone } from "../lib/format";
 import { Card, MiniBar, NeedsAnalysis, Pill, ScoreRing, SIZE, Stat, Tag, cx } from "../components/ui";
 import { t } from "../lib/i18n";
-import ReadAloud, { LanguageMismatch } from "../components/ReadAloud";
+import { LanguageMismatch } from "../components/LanguageMismatch";
 
 const COMPONENT_LABELS: Record<string, string> = {
   demand: "Market demand",
@@ -98,7 +98,6 @@ function DashboardBody() {
               <div className={cx("mt-1 text-lg font-bold", tone.text)}>{tone.label}</div>
               <div className={cx("mt-2 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold", verdictTone(rec.verdict))}>{t(rec.verdict)}</div>
               <div className="mt-2"><Tag kind="ai" /></div>
-              <div className="mt-2 no-print"><ReadAloud ai={ai} idea={idea} analysis={analysis} /></div>
             </div>
           </div>
         </div>

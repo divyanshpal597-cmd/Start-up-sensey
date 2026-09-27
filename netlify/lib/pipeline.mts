@@ -40,7 +40,6 @@ function inputFromIdea(idea: any): IdeaInput {
     category: str(u.category),
     additionalInfo: str(u.additionalInfo),
     language: cleanLanguage(u.language),
-    transcript: str(u.transcript) || undefined,
   };
 }
 

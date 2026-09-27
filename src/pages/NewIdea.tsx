@@ -1,10 +1,9 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, CheckCircle2, MapPin, Mic, Sparkles, Wallet } from "lucide-react";
+import { AlertTriangle, MapPin, Sparkles, Wallet } from "lucide-react";
 import { Api, storageGet, storageSet } from "../lib/api";
 import { getLang, t } from "../lib/i18n";
 import { Card, ErrorBox, PageHeader, SIZE, Spinner, cx } from "../components/ui";
-import VoiceInput, { type Extraction } from "../components/VoiceInput";
 import { useCurrentIdea } from "../context/CurrentIdea";
 
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "AUD", "CAD", "NPR", "BDT", "PKR", "LKR"];
@@ -34,10 +33,6 @@ export default function NewIdea() {
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [simulate, setSimulate] = useState(false);
-  // voice review state
-  const [voice, setVoice] = useState<Extraction | null>(null);
-  const [fromVoice, setFromVoice] = useState<Set<Key>>(new Set());
-  const [uncertain, setUncertain] = useState<Set<Key>>(new Set());
   const nav = useNavigate();
   const { refreshIdeas } = useCurrentIdea();
 
@@ -48,59 +43,7 @@ export default function NewIdea() {
   const set = (k: Key) => (e: { target: { value: string } }) => {
     setF((p) => ({ ...p, [k]: e.target.value }));
     setErrors((p) => ({ ...p, [k]: undefined }));
-    setUncertain((u) => {
-      if (!u.has(k)) return u;
-      const n = new Set(u);
-      n.delete(k);
-      return n;
-    });
   };
-
-  function applyExtraction(x: Extraction) {
-    const fx = x.fields || {};
-    const filled = new Set<Key>();
-    const next: Partial<Form> = {};
-    const put = (k: Key, v: unknown) => {
-      if (v === null || v === undefined || v === "") return;
-      next[k] = String(v);
-      filled.add(k);
-    };
-    put("businessIdea", fx.businessIdea);
-    if (fx.businessType === "Product" || fx.businessType === "Service") put("businessType", fx.businessType);
-    put("category", fx.category);
-    put("city", fx.city);
-    put("state", fx.state);
-    put("country", fx.country);
-    put("area", fx.area);
-    if (typeof fx.budget === "number" && fx.budget > 0) put("budget", fx.budget);
-    if (fx.currency && CURRENCIES.includes(fx.currency)) put("currency", fx.currency);
-    put("expectedCustomers", fx.expectedCustomers);
-    put("targetCustomer", fx.targetCustomer);
-    put("sellingPrice", fx.sellingPrice);
-    put("additionalInfo", fx.additionalInfo);
-    // Uncertain values are never filled in silently: the field is cleared so the user must enter it.
-    const unc = new Set<Key>((x.uncertainFields || []).filter((k): k is Key => k in EMPTY));
-    if (unc.has("budget")) {
-      next.budget = "";
-      filled.delete("budget");
-    }
-    setF((p) => ({ ...p, ...next }));
-    setFromVoice(filled);
-    setUncertain(unc);
-    setVoice(x);
-    setErrors({});
-  }
-
-  function clearVoice() {
-    setF((p) => {
-      const n = { ...p };
-      fromVoice.forEach((k) => ((n as any)[k] = EMPTY[k]));
-      return n;
-    });
-    setVoice(null);
-    setFromVoice(new Set());
-    setUncertain(new Set());
-  }
 
   function validate(): boolean {
     const e: Partial<Record<Key, string>> = {};
@@ -126,8 +69,6 @@ export default function NewIdea() {
         ...f,
         budget: Number(f.budget.replace(/[,\s]/g, "")),
         language: getLang(),
-        inputMethod: voice ? "voice" : "typed",
-        transcript: voice?.transcript || undefined,
         simulateFailure: simulate,
       });
       if (simulate) storageSet(SIMULATE_KEY, null);
@@ -142,26 +83,11 @@ export default function NewIdea() {
   const field = (k: Key) =>
     cx(
       "input",
-      errors[k] && "border-rose-300 focus:border-rose-400 focus:ring-rose-100",
-      uncertain.has(k) && !errors[k] && "border-amber-400 bg-amber-50/50",
-      fromVoice.has(k) && !uncertain.has(k) && !errors[k] && "border-violet-300 bg-violet-50/40"
+      errors[k] && "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
     );
 
-  /** Label with "from your voice" / "please check" markers. */
-  const Lbl = ({ k, htmlFor, children }: { k: Key; htmlFor?: string; children: ReactNode }) => (
-    <div className="mb-1.5 flex flex-wrap items-center gap-2">
-      <label className="text-sm font-medium text-slate-700" htmlFor={htmlFor}>{children}</label>
-      {uncertain.has(k) && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800" data-testid={`uncertain-${k}`}>
-          <AlertTriangle className="h-3 w-3" /> {t("Unclear — please check")}
-        </span>
-      )}
-      {fromVoice.has(k) && !uncertain.has(k) && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700" data-testid={`voice-${k}`}>
-          <Mic className="h-3 w-3" /> {t("From your voice")}
-        </span>
-      )}
-    </div>
+  const Lbl = ({ htmlFor, children }: { k: Key; htmlFor?: string; children: ReactNode }) => (
+    <label className="label" htmlFor={htmlFor}>{children}</label>
   );
   const Err = ({ k }: { k: Key }) => (errors[k] ? <p className="mt-1 text-xs text-rose-600">{errors[k]}</p> : null);
 
@@ -170,7 +96,7 @@ export default function NewIdea() {
       <PageHeader
         eyebrow="Analyze New Idea"
         title="Tell us about your business idea"
-        subtitle="Type it, or speak it. Your inputs are sent to a real AI model on our server. It analyses your specific idea, location and budget — nothing is pre-written."
+        subtitle="Your inputs are sent to a real AI model on our server. It analyses your specific idea, location and budget — nothing is pre-written."
       />
       {simulate && (
         <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -178,25 +104,6 @@ export default function NewIdea() {
           <div>
             <b>{t("Failure test is ON.")}</b> {t("The next analysis will call the AI with an invalid model to demonstrate error handling.")}{" "}
             <button className="underline" onClick={() => { storageSet(SIMULATE_KEY, null); setSimulate(false); }}>{t("Turn off")}</button>
-          </div>
-        </div>
-      )}
-
-      <div className="mb-5">
-        <VoiceInput onExtracted={applyExtraction} onCleared={clearVoice} />
-      </div>
-
-      {voice && (
-        <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900" data-testid="voice-review-banner">
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-            <div>
-              <b>{t("Review the details below.")}</b> {t("Fields marked “From your voice” were filled from what you said — edit anything that's wrong, fill in what's missing, then press Confirm & Analyze.")}
-              {voice.budgetHeard && uncertain.has("budget") && (
-                <div className="mt-1 text-amber-800" data-testid="budget-heard">{t("We heard “{x}” for the budget but weren't sure of the amount — please type it.", { x: voice.budgetHeard })}</div>
-              )}
-              {voice.note && <div className="mt-1 text-violet-800">{voice.note}</div>}
-            </div>
           </div>
         </div>
       )}
@@ -301,7 +208,7 @@ export default function NewIdea() {
             {t("The analysis will be written in {lang}.", { lang: getLang() === "hi" ? "हिंदी" : getLang() === "hinglish" ? "Hinglish" : "English" })}
           </p>
           <button type="submit" disabled={submitting} className={cx("btn-primary", SIZE.lg)} data-testid="submit-idea">
-            {submitting ? <Spinner /> : voice ? <CheckCircle2 className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />} {voice ? t("Confirm & Analyze") : t("ANALYZE BUSINESS IDEA")}
+            {submitting ? <Spinner /> : <Sparkles className="h-5 w-5" />} {t("ANALYZE BUSINESS IDEA")}
           </button>
         </div>
       </form>

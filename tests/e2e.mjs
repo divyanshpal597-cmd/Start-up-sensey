@@ -71,7 +71,7 @@ async function analyze(page, form) {
   return { outcome: "timeout", url, stagesSeen: [...stagesSeen] };
 }
 
-/** Waits on the analyzing page (after a voice "Confirm & Analyze") until done. */
+/** Waits on the analyzing page (after pressing Analyze) until done. */
 async function waitAnalysis(page) {
   await page.waitForURL(/\/analyzing\//, { timeout: 30000 });
   const t0 = Date.now();
@@ -93,49 +93,6 @@ const devanagariRatio = (s) => {
 async function setLanguage(page, lang) {
   await page.getByTestId("language-select").first().selectOption(lang);
   await page.waitForTimeout(400);
-}
-
-/** Replaces the browser's speech recognition with a scripted one (headless browsers have no microphone). */
-const MOCK_SPEECH = () => {
-  class MockRecognition {
-    constructor() {
-      this.lang = "en-IN";
-      this.continuous = false;
-      this.interimResults = false;
-    }
-    start() {
-      window.__speechLangUsed = this.lang;
-      setTimeout(() => {
-        const m = window.__mockSpeech || {};
-        if (m.error) {
-          this.onerror && this.onerror({ error: m.error });
-          this.onend && this.onend();
-          return;
-        }
-        if (m.transcript) {
-          const alt = { transcript: m.transcript, confidence: 0.9 };
-          const result = Object.assign([alt], { isFinal: true });
-          this.onresult && this.onresult({ resultIndex: 0, results: [result] });
-        }
-        if (m.autoEnd) this.onend && this.onend();
-      }, 400);
-    }
-    stop() {
-      setTimeout(() => this.onend && this.onend(), 150);
-    }
-    abort() {}
-  }
-  window.SpeechRecognition = MockRecognition;
-  window.webkitSpeechRecognition = MockRecognition;
-};
-
-async function speak(page, transcript, opts = {}) {
-  await page.evaluate(([t, o]) => (window.__mockSpeech = { transcript: t, ...o }), [transcript, opts]);
-  await page.getByTestId("mic-button").click();
-  if (opts.error || opts.autoEnd) return;
-  await page.getByTestId("listening").waitFor({ timeout: 10000 });
-  await page.waitForTimeout(900);
-  await page.getByTestId("stop-recording").click();
 }
 
 async function mainText(page) {
@@ -423,9 +380,8 @@ await test("E", "AI failure shows an error, never sample data", async (check) =>
   check("Failure-test idea deleted, others kept", !names.some((x) => /failure test/i.test(x)) && names.length >= 2, names.join(" | "));
 });
 
-// ───────────── Voice input + languages ─────────────
+// ───────────── Languages (typed input only) ─────────────
 const voiceCtx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-await voiceCtx.addInitScript(MOCK_SPEECH);
 const vp = await voiceCtx.newPage();
 vp.on("pageerror", (err) => results.consoleErrors.push(`PAGEERROR ${vp.url()} :: ${String(err)}`.slice(0, 600)));
 vp.on("dialog", (d) => d.accept());
@@ -451,25 +407,28 @@ await test("L1", "Language switching + persists after refresh", async (check) =>
   check("Back to English", /My Ideas/.test(nav));
 });
 
-await test("V1", "English voice → extraction → edit → Confirm & Analyze (new idea: rooftop microgreens)", async (check) => {
+await test("V1", "No voice feature anywhere + typed English idea (new idea: rooftop microgreens)", async (check) => {
   await vp.goto(`${BASE}/new`);
-  await speak(vp, "I want to start a rooftop hydroponic microgreens farm in Indore, Madhya Pradesh, selling fresh microgreens to hotels and cafes. My budget is one and a half lakh rupees, and I would sell a 100 gram box for 120 rupees.");
-  await vp.getByTestId("voice-review-banner").waitFor({ timeout: 30000 });
-  const v = async (id) => vp.locator(`#${id}`).inputValue();
-  const fields = { idea: await v("businessIdea"), city: await v("city"), state: await v("state"), budget: await v("budget"), price: await v("sellingPrice"), expected: await v("expectedCustomers") };
-  results.data.V1_fields = fields;
-  check("Business idea extracted from speech", /microgreen/i.test(fields.idea), fields.idea);
-  check("City extracted (Indore)", /indore/i.test(fields.city), fields.city);
-  check("Budget “one and a half lakh” → 150000", Number(fields.budget) === 150000, fields.budget);
-  check("Selling price extracted", /120/.test(fields.price), fields.price);
-  const area = await v("area");
-  check("Premises word (rooftop) not mistaken for a locality", !/rooftop/i.test(area), area);
-  check("Customers extracted (hotels / cafes)", /hotel|cafe/i.test(fields.expected + " " + (await v("targetCustomer"))), fields.expected);
-  check("Fields marked “From your voice”", (await vp.locator('[data-testid="voice-businessIdea"], [data-testid="voice-city"], [data-testid="voice-budget"], [data-testid="voice-sellingPrice"]').count()) >= 3);
-  check("Transcript is editable", await vp.getByTestId("transcript").isEditable());
-  check("Button reads Confirm & Analyze", /Confirm & Analyze/.test(await vp.getByTestId("submit-idea").innerText()));
+  await vp.waitForSelector("#businessIdea");
+  const noVoice = await vp.evaluate(() => {
+    const txt = document.body.innerText;
+    const sel = '[data-testid="mic-button"],[data-testid="read-aloud"],[data-testid="transcript"],[data-testid="speech-lang"],[data-testid="voice-review-banner"],[data-testid="voice-unsupported"]';
+    return { els: document.querySelectorAll(sel).length, text: /Speak Your Business Idea|microphone|Read Analysis Aloud|Re-record|Confirm & Analyze/i.test(txt) };
+  });
+  check("No mic / voice / read-aloud UI on New Idea", noVoice.els === 0 && !noVoice.text, JSON.stringify(noVoice));
+  const status = await vp.evaluate(async () => (await fetch("/api/extract-idea", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status);
+  check("Voice extraction endpoint removed", status === 404, String(status));
+  check("Button reads ANALYZE BUSINESS IDEA", /ANALYZE BUSINESS IDEA/.test(await vp.getByTestId("submit-idea").innerText()));
+  await vp.fill("#businessIdea", "Rooftop hydroponic microgreens farm");
+  await vp.fill("#city", "Indore");
+  await vp.fill("#state", "Madhya Pradesh");
+  await vp.fill("#country", "India");
+  await vp.fill("#budget", "150000");
+  await vp.fill("#sellingPrice", "₹120 per 100 g box");
+  await vp.fill("#expectedCustomers", "Hotels and cafes");
   await vp.fill("#targetCustomer", "Premium hotels and cloud kitchens in Vijay Nagar");
-  await shot(vp, "V1-review");
+  check("Typed fields keep their values", (await vp.locator("#businessIdea").inputValue()) === "Rooftop hydroponic microgreens farm");
+  await shot(vp, "V1-typed-form");
   await vp.getByTestId("submit-idea").click();
   const r = await waitAnalysis(vp);
   results.data.V1_run = r;
@@ -478,28 +437,14 @@ await test("V1", "English voice → extraction → edit → Confirm & Analyze (n
   await vp.goto(`${BASE}/`);
   await vp.waitForSelector('[data-testid="business-name"]', { timeout: 30000 });
   const dash = await mainText(vp);
-  check("Dashboard shows the spoken idea", /microgreen/i.test(await vp.getByTestId("business-name").innerText()));
+  check("Dashboard shows the typed idea", /microgreen/i.test(await vp.getByTestId("business-name").innerText()));
   check("Dashboard location = Indore", /indore/i.test(await vp.getByTestId("business-location").innerText()));
   check("Analysis is about microgreens (not a template)", /microgreen|hydroponic/i.test(dash));
+  check("No read-aloud button on dashboard", (await vp.getByTestId("read-aloud").count()) === 0 && !/Read Analysis Aloud/.test(dash));
   await shot(vp, "V1-dashboard");
 });
 
-await test("V2", "Hindi voice → extraction (Devanagari speech)", async (check) => {
-  await setLanguage(vp, "hi");
-  await vp.goto(`${BASE}/new`);
-  check("Speech language defaults to Hindi when UI is Hindi", (await vp.getByTestId("speech-lang").inputValue()) === "hi-IN");
-  await speak(vp, "मैं जयपुर में पुरानी साड़ियों से डिज़ाइनर हैंडबैग बनाने का काम शुरू करना चाहती हूँ, बजट लगभग अस्सी हज़ार रुपये है और मेरे ग्राहक कॉलेज की लड़कियाँ और बुटीक होंगे");
-  check("Recognition used hi-IN", (await vp.evaluate(() => window.__speechLangUsed)) === "hi-IN");
-  await vp.getByTestId("voice-review-banner").waitFor({ timeout: 30000 });
-  const f = { idea: await vp.locator("#businessIdea").inputValue(), city: await vp.locator("#city").inputValue(), budget: await vp.locator("#budget").inputValue(), cust: await vp.locator("#expectedCustomers").inputValue() + " " + (await vp.locator("#targetCustomer").inputValue()) };
-  results.data.V2_fields = f;
-  check("Idea extracted in Hindi", /[\u0900-\u097F]/.test(f.idea) && /बैग|हैंडबैग|साड़ी/.test(f.idea), f.idea);
-  check("City = Jaipur", /jaipur|जयपुर/i.test(f.city), f.city);
-  check("Budget “अस्सी हज़ार” → 80000", Number(f.budget) === 80000, f.budget);
-  check("Customers extracted", /कॉलेज|बुटीक|लड़कि/.test(f.cust), f.cust);
-  check("Hindi button label", /पुष्टि करें/.test(await vp.getByTestId("submit-idea").innerText()));
-  await shot(vp, "V2-hindi-voice-review");
-});
+await setLanguage(vp, "hi");
 
 await test("H", "Hindi typed idea → analysis generated in Hindi", async (check) => {
   // stays in Hindi UI
@@ -530,22 +475,22 @@ await test("H", "Hindi typed idea → analysis generated in Hindi", async (check
   await shot(vp, "H-hindi-market");
   await vp.goto(`${BASE}/`);
   await vp.waitForSelector('[data-testid="business-name"]');
-  check("Read Analysis Aloud button present", (await vp.getByTestId("read-aloud").count()) === 1);
+  check("No read-aloud button", (await vp.getByTestId("read-aloud").count()) === 0);
   await shot(vp, "H-hindi-dashboard");
 });
 
-await test("G", "Hinglish voice → Hinglish analysis (new idea: drone crop spraying)", async (check) => {
+await test("G", "Hinglish typed idea → Hinglish analysis (new idea: drone crop spraying)", async (check) => {
   await setLanguage(vp, "hinglish");
   await vp.goto(`${BASE}/new`);
-  await speak(vp, "Main Kanpur ke paas gaon mein drone se kheton mein dawai chhidakne ki service shuru karna chahta hoon, budget kareeb teen lakh hai, kisaan log mere customer honge aur ek acre ka 400 rupaye lunga");
-  await vp.getByTestId("voice-review-banner").waitFor({ timeout: 30000 });
-  const f = { idea: await vp.locator("#businessIdea").inputValue(), city: await vp.locator("#city").inputValue(), budget: await vp.locator("#budget").inputValue(), price: await vp.locator("#sellingPrice").inputValue() };
-  results.data.G_fields = f;
-  check("Idea extracted (drone spraying)", /drone/i.test(f.idea), f.idea);
-  check("Idea written in Roman script (Hinglish)", devanagariRatio(f.idea) === 0, f.idea);
-  check("City = Kanpur", /kanpur/i.test(f.city), f.city);
-  check("Budget “teen lakh” → 300000", Number(f.budget) === 300000, f.budget);
-  check("Price per acre extracted", /400/.test(f.price), f.price);
+  await vp.waitForSelector("#businessIdea");
+  check("Hinglish form labels", /Business Idea|Shehar|Budget/i.test(await mainText(vp)));
+  await vp.fill("#businessIdea", "Drone se kheton mein dawai chhidakne ki service");
+  await vp.fill("#city", "Kanpur");
+  await vp.fill("#state", "Uttar Pradesh");
+  await vp.fill("#country", "India");
+  await vp.fill("#budget", "300000");
+  await vp.fill("#sellingPrice", "₹400 per acre");
+  await vp.fill("#expectedCustomers", "Aas-paas ke gaon ke kisaan");
   await vp.getByTestId("submit-idea").click();
   const r = await waitAnalysis(vp);
   results.data.G_run = r;
@@ -560,53 +505,13 @@ await test("G", "Hinglish voice → Hinglish analysis (new idea: drone crop spra
   await shot(vp, "G-hinglish-dashboard");
 });
 
-await test("V3", "Unclear spoken budget is left empty, not invented", async (check) => {
-  await setLanguage(vp, "en");
-  await vp.goto(`${BASE}/new`);
-  await speak(vp, "I'm thinking of a mobile pet grooming van in Nagpur for busy dog owners. Budget, hmm, I'm not sure yet, maybe a few, let's see.");
-  await vp.getByTestId("voice-review-banner").waitFor({ timeout: 30000 });
-  const budget = await vp.locator("#budget").inputValue();
-  results.data.V3_budget = budget;
-  check("Budget left empty", budget === "", budget);
-  check("Idea still extracted", /groom/i.test(await vp.locator("#businessIdea").inputValue()));
-  await vp.getByTestId("submit-idea").click();
-  await vp.waitForTimeout(500);
-  check("Cannot analyze until the user enters a budget", /\/new$/.test(vp.url()) && /Enter your starting budget/.test(await mainText(vp)));
-  await shot(vp, "V3-unclear-budget");
-  await vp.getByTestId("clear-transcript").click();
-  check("Clear removes the transcript and voice-filled fields", (await vp.getByTestId("voice-review-banner").count()) === 0 && (await vp.locator("#businessIdea").inputValue()) === "");
-});
-
-await test("V4", "Voice errors: no speech, permission denied, unsupported browser", async (check) => {
-  await vp.goto(`${BASE}/new`);
-  await speak(vp, "", { autoEnd: true });
-  await vp.getByTestId("voice-error").waitFor({ timeout: 10000 });
-  check("Empty speech → helpful message", /didn't hear anything/.test(await vp.getByTestId("voice-error").innerText()));
-  await vp.goto(`${BASE}/new`);
-  await speak(vp, "", { error: "not-allowed" });
-  await vp.getByTestId("voice-error").waitFor({ timeout: 10000 });
-  check("Permission denied → helpful message", /permission was denied/i.test(await vp.getByTestId("voice-error").innerText()));
-  const plain = await browser.newContext();
-  await plain.addInitScript(() => {
-    delete window.SpeechRecognition;
-    delete window.webkitSpeechRecognition;
-  });
-  const pp = await plain.newPage();
-  await pp.goto(`${BASE}/new`);
-  await pp.getByTestId("voice-unsupported").waitFor({ timeout: 15000 });
-  check("Unsupported browser → fallback notice", true);
-  await pp.fill("#businessIdea", "Typing still works");
-  check("Typing still works without voice", (await pp.locator("#businessIdea").inputValue()) === "Typing still works");
-  await plain.close();
-});
-
-await test("X4", "My Ideas lists every analysis (typed + voice, all languages)", async (check) => {
+await test("X4", "My Ideas lists every analysis (all languages)", async (check) => {
   await vp.goto(`${BASE}/ideas`);
   await vp.waitForSelector('[data-testid="idea-card"]', { timeout: 30000 });
   const names = await vp.locator('[data-testid="idea-name"]').allInnerTexts();
   results.data.X4_names = names;
   check("Paper plate + EV still present", names.some((n) => /paper plate/i.test(n)) && names.some((n) => /ev charging/i.test(n)), names.join(" | "));
-  check("Voice + Hindi + Hinglish ideas saved", names.some((n) => /microgreen/i.test(n)) && names.some((n) => /साबुन/.test(n)) && names.some((n) => /drone/i.test(n)), names.join(" | "));
+  check("English + Hindi + Hinglish ideas saved", names.some((n) => /microgreen/i.test(n)) && names.some((n) => /साबुन/.test(n)) && names.some((n) => /drone/i.test(n)), names.join(" | "));
   // switching UI language shows the offer to regenerate an analysis in another language
   await vp.locator('[data-testid="idea-name"]', { hasText: /microgreen/i }).first().click();
   await vp.waitForSelector('[data-testid="business-name"]', { timeout: 30000 });

@@ -94,11 +94,6 @@ export const Api = {
   analyze: (body: unknown) => api<{ ideaId: string; analysisId: string }>("/api/analyze-business", { method: "POST", body }),
   reanalyze: (ideaId: string, simulateFailure = false, language?: string) =>
     api<{ ideaId: string; analysisId: string }>(`/api/ideas/${ideaId}/reanalyze`, { method: "POST", body: { simulateFailure, language } }),
-  extractIdea: (transcript: string, language: string) =>
-    api<{ transcript: string; fields: Record<string, any>; uncertainFields: string[]; budgetHeard: string | null; note: string | null }>(
-      "/api/extract-idea",
-      { method: "POST", body: { transcript, language } }
-    ),
   listIdeas: () => api<{ ideas: any[] }>("/api/ideas"),
   getIdea: (ideaId: string, analysisId?: string) =>
     api<{ idea: any; analysis: any }>(`/api/ideas/${ideaId}${analysisId ? `?analysisId=${analysisId}` : ""}`),
@@ -121,8 +116,6 @@ const CODE_MESSAGES: Record<string, string> = {
   worker_unavailable: "Could not start the background analysis worker.",
   not_found: "Not found.",
   missing_owner_key: "Missing or invalid workspace key.",
-  empty_transcript: "No speech was captured. Please try again.",
-  ai_failed: "AI could not read the details from your speech. You can edit the fields yourself or try again.",
   internal_error: "Something went wrong on the server.",
 };
 function errorMessage(code: string, fallback: string) {
