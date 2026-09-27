@@ -431,6 +431,9 @@ await test("V1", "English voice → extraction → edit → Confirm & Analyze (n
   check("City extracted (Indore)", /indore/i.test(fields.city), fields.city);
   check("Budget “one and a half lakh” → 150000", Number(fields.budget) === 150000, fields.budget);
   check("Selling price extracted", /120/.test(fields.price), fields.price);
+  const area = await v("area");
+  check("Premises word (rooftop) not mistaken for a locality", !/rooftop/i.test(area), area);
+  check("Customers extracted (hotels / cafes)", /hotel|cafe/i.test(fields.expected + " " + (await v("targetCustomer"))), fields.expected);
   check("Fields marked “From your voice”", (await vp.locator('[data-testid="voice-businessIdea"], [data-testid="voice-city"], [data-testid="voice-budget"], [data-testid="voice-sellingPrice"]').count()) >= 3);
   check("Transcript is editable", await vp.getByTestId("transcript").isEditable());
   check("Button reads Confirm & Analyze", /Confirm & Analyze/.test(await vp.getByTestId("submit-idea").innerText()));
