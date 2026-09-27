@@ -195,6 +195,29 @@ await page.waitForTimeout(1500);
 let workspaceKey = await page.evaluate(() => localStorage.getItem("ss_owner_key"));
 results.status = await page.evaluate(async () => (await fetch("/api/status")).json()).catch((e) => String(e));
 
+await test("R", "Empty state → tap “Analyze Your First Idea” (phone + desktop) renders the form, no blank page", async (check) => {
+  for (const [label, opts] of [
+    ["phone", { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36" }],
+    ["desktop", { viewport: { width: 1440, height: 1000 } }],
+  ]) {
+    const c = await browser.newContext(opts);
+    const p = await c.newPage();
+    const errs = [];
+    p.on("pageerror", (e) => errs.push(String(e?.stack || e).slice(0, 1500)));
+    p.on("console", (m) => m.type() === "error" && errs.push("console: " + m.text().slice(0, 500)));
+    await p.goto(`${BASE}/`);
+    await p.getByText("Analyze Your First Idea").first().waitFor({ timeout: 30000 });
+    await p.getByText("Analyze Your First Idea").first().click();
+    await p.waitForTimeout(2500);
+    const hasForm = (await p.locator("#businessIdea").count()) > 0;
+    const bodyText = (await p.locator("body").innerText()).slice(0, 200);
+    await p.screenshot({ path: path.join(OUT, `R-${label}.png`) });
+    results.data[`R_${label}`] = { url: p.url(), hasForm, bodyText, errs };
+    check(`${label}: form shows after tapping`, hasForm, JSON.stringify({ url: p.url(), bodyText, errs }).slice(0, 1500));
+    await c.close();
+  }
+});
+
 await test("X0", "Empty state before any analysis", async (check) => {
   const txt = await mainText(page);
   check("Shows 'No Business Idea Analyzed Yet'", txt.includes("No Business Idea Analyzed Yet"), txt.slice(0, 200));
