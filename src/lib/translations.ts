@@ -1,6 +1,9 @@
 // Generated translation dictionaries (English source string → translation).
 // Missing keys fall back to English.
 export const HI: Record<string, string> = {
+ "Something went wrong on this page.": "इस पेज पर कुछ गड़बड़ हो गई।",
+ "Your ideas are saved. Reload to continue.": "आपके आइडिया सेव हैं। आगे बढ़ने के लिए पेज रीलोड करें।",
+ "Reload page": "पेज रीलोड करें",
  "Validate Before You Invest.": "अपना पैसा लगाने से पहले जाँचें।",
  "AI figures are estimates. Supplier listings come from live map data.": "AI के आँकड़े अनुमान हैं। सप्लायर लिस्टिंग लाइव मैप डेटा से आती हैं।",
  "Language": "भाषा",
@@ -626,6 +629,9 @@ export const HI: Record<string, string> = {
 };
 
 export const HINGLISH: Record<string, string> = {
+ "Something went wrong on this page.": "Is page par kuch gadbad ho gayi.",
+ "Your ideas are saved. Reload to continue.": "Aapke ideas save hain. Aage badhne ke liye reload karein.",
+ "Reload page": "Page reload karein",
  "Validate Before You Invest.": "Paisa lagane se pehle validate karein.",
  "AI figures are estimates. Supplier listings come from live map data.": "AI ke figures estimates hain. Supplier listings live map data se aati hain.",
  "Language": "Bhasha",

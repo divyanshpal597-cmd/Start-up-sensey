@@ -23,6 +23,10 @@ import Reports from "./pages/Reports";
 import SettingsPage from "./pages/Settings";
 import SharedReport from "./pages/SharedReport";
 import NotFound from "./pages/NotFound";
+import ErrorBoundary, { reportClientError } from "./components/ErrorBoundary";
+
+window.addEventListener("error", (e) => reportClientError(String(e.message), e.error?.stack));
+window.addEventListener("unhandledrejection", (e) => reportClientError(`unhandledrejection: ${String((e as PromiseRejectionEvent).reason?.message || (e as PromiseRejectionEvent).reason)}`, (e as PromiseRejectionEvent).reason?.stack));
 
 /** Re-renders the whole app when the language changes (routes, saved data and server state are kept). */
 function LanguageRoot() {
@@ -66,6 +70,8 @@ function LanguageRoot() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <LanguageRoot />
+    <ErrorBoundary>
+      <LanguageRoot />
+    </ErrorBoundary>
   </StrictMode>
 );
