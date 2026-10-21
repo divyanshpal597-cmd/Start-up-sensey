@@ -1,0 +1,10 @@
+{
+  "name": "Find my iPhone",
+  "short_name": "Find iPhone",
+  "start_url": "/find/",
+  "scope": "/find/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "icons": [{ "src": "/find/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

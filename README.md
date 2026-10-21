@@ -52,3 +52,6 @@ insert into startup_sense.config(key, value) values ('api_secret', '<same as SS_
 
 ## Tests
 `.github/workflows/e2e.yml` runs `tests/e2e.mjs` (Playwright) against the live site: tests A–E from the spec plus security, PDF, share, pivots and mobile checks. Results are pushed to the `e2e-results` branch.
+
+## FindMe (iPhone → Android location sharing)
+A separate tool that lives in this repo: an iPhone app, the `/api/location` function and the `/find/` map page. See [`location-share/README.md`](location-share/README.md).

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Find my iPhone</title>
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="manifest" href="/find/manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="/find/icon.svg" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    :root { --bg: #0f172a; --card: #ffffff; --text: #0f172a; --muted: #64748b; --accent: #2563eb; --warn: #b45309; --warn-bg: #fef3c7; --err: #b91c1c; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+    #map { position: fixed; inset: 0; }
+    .panel { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 1000;
+             background: var(--card); border-radius: 16px; padding: 14px 16px; box-shadow: 0 8px 30px rgba(0,0,0,.25); max-width: 520px; margin: 0 auto; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    h1 { font-size: 17px; margin: 0; }
+    .ago { font-size: 13px; color: var(--muted); }
+    .ago.live::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #16a34a; margin-right: 6px; vertical-align: 1px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+    .stat { background: #f1f5f9; border-radius: 10px; padding: 8px; text-align: center; }
+    .stat b { display: block; font-size: 15px; }
+    .stat span { font-size: 11px; color: var(--muted); }
+    .addr { font-size: 13px; color: var(--muted); margin-top: 4px; min-height: 1em; }
+    .btns { display: flex; gap: 8px; }
+    button, a.btn { flex: 1; border: 0; border-radius: 10px; padding: 11px 8px; font-size: 14px; font-weight: 600; text-align: center; text-decoration: none; cursor: pointer; }
+    .primary { background: var(--accent); color: #fff; }
+    .secondary { background: #e2e8f0; color: var(--text); }
+    .secondary[aria-pressed="true"] { background: #dbeafe; color: var(--accent); }
+    .notice { font-size: 13px; border-radius: 10px; padding: 8px 10px; margin-top: 10px; background: var(--warn-bg); color: var(--warn); }
+    .notice.err { background: #fee2e2; color: var(--err); }
+    .hidden { display: none !important; }
+    .setup { position: fixed; inset: 0; z-index: 2000; background: var(--bg); color: #fff; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .setup div { max-width: 420px; }
+    .setup input { width: 100%; padding: 12px; border-radius: 10px; border: 0; font-size: 15px; margin: 10px 0; }
+    .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(37,99,235,.4); }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <section class="setup hidden" id="setup">
+    <div>
+      <h1 style="font-size:22px">Find my iPhone</h1>
+      <p>Open the link the iPhone app shared with you, or paste it here.</p>
+      <input id="linkInput" placeholder="https://…/find/#…" autocomplete="off" />
+      <div class="btns"><button class="primary" id="linkSave">Open</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel">
+    <div class="row">
+      <h1 id="title">iPhone</h1>
+      <span class="ago" id="ago">Loading…</span>
+    </div>
+    <div class="addr" id="addr"></div>
+    <div class="stats">
+      <div class="stat"><b id="acc">–</b><span>accuracy</span></div>
+      <div class="stat"><b id="spd">–</b><span>speed</span></div>
+      <div class="stat"><b id="bat">–</b><span>battery</span></div>
+    </div>
+    <div class="btns">
+      <a class="btn primary" id="directions" target="_blank" rel="noopener">Directions</a>
+      <button class="secondary" id="follow" aria-pressed="true">Follow</button>
+      <button class="secondary" id="trail" aria-pressed="true">Trail</button>
+    </div>
+    <div class="notice hidden" id="notice"></div>
+  </section>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    const POLL_MS = 10000;
+    const STALE_MS = 10 * 60 * 1000;
+    const ID_RE = /^[A-Za-z0-9_-]{22,128}$/;
+    const $ = (id) => document.getElementById(id);
+
+    function idFromLink(s) {
+      const m = String(s || "").trim().match(/#([A-Za-z0-9_-]{22,128})/);
+      return m ? m[1] : ID_RE.test(String(s || "").trim()) ? String(s).trim() : null;
+    }
+
+    let shareId = idFromLink(location.hash);
+    try {
+      if (shareId) localStorage.setItem("findShareId", shareId);
+      else shareId = localStorage.getItem("findShareId");
+    } catch {}
+
+    if (!shareId) {
+      $("setup").classList.remove("hidden");
+      $("linkSave").onclick = () => {
+        const id = idFromLink($("linkInput").value);
+        if (!id) { $("linkInput").value = ""; $("linkInput").placeholder = "That doesn't look like a share link"; return; }
+        location.hash = id;
+        location.reload();
+      };
+    } else {
+      start();
+    }
+
+    function start() {
+      const map = L.map("map", { zoomControl: false }).setView([20, 78], 4);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19, attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      const marker = L.marker([0, 0], { icon: L.divIcon({ className: "", html: '<div class="dot"></div>', iconSize: [24, 24], iconAnchor: [12, 12] }) });
+      const accCircle = L.circle([0, 0], { radius: 0, color: "#2563eb", weight: 1, fillOpacity: 0.12 });
+      const trail = L.polyline([], { color: "#2563eb", weight: 4, opacity: 0.6 });
+      let follow = true, showTrail = true, first = true, latest = null, lastAddrKey = "";
+
+      map.on("dragstart", () => setFollow(false));
+      function setFollow(v) { follow = v; $("follow").setAttribute("aria-pressed", String(v)); if (v && latest) map.panTo([latest.lat, latest.lon]); }
+      $("follow").onclick = () => setFollow(!follow);
+      $("trail").onclick = () => {
+        showTrail = !showTrail;
+        $("trail").setAttribute("aria-pressed", String(showTrail));
+        showTrail ? trail.addTo(map) : trail.remove();
+      };
+
+      function notice(text, isErr) {
+        const n = $("notice");
+        n.textContent = text || "";
+        n.classList.toggle("hidden", !text);
+        n.classList.toggle("err", !!isErr);
+      }
+
+      function agoText(ms) {
+        const s = Math.max(0, Math.round(ms / 1000));
+        if (s < 60) return `${s}s ago`;
+        if (s < 3600) return `${Math.round(s / 60)} min ago`;
+        if (s < 86400) return `${Math.floor(s / 3600)} h ${Math.round((s % 3600) / 60)} min ago`;
+        return `${Math.round(s / 86400)} days ago`;
+      }
+
+      let clockSkew = 0;
+      function renderAgo() {
+        if (!latest) return;
+        const age = Date.now() + clockSkew - latest.ts;
+        $("ago").textContent = `Updated ${agoText(age)}`;
+        $("ago").classList.toggle("live", age < 2 * 60 * 1000);
+        if (age > STALE_MS) notice(`The iPhone hasn't reported for ${agoText(age).replace(" ago", "")}. It may be switched off, offline, in Low Power Mode, or sharing is paused. Showing the last known location.`);
+        else notice("");
+      }
+      setInterval(renderAgo, 1000);
+
+      async function reverseGeocode(p) {
+        const key = `${p.lat.toFixed(4)},${p.lon.toFixed(4)}`;
+        if (key === lastAddrKey) return;
+        lastAddrKey = key;
+        try {
+          const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&lat=${p.lat}&lon=${p.lon}`, { headers: { "accept-language": navigator.language || "en" } });
+          const j = await r.json();
+          if (key === lastAddrKey) $("addr").textContent = j.display_name || "";
+        } catch {}
+      }
+
+      async function poll() {
+        try {
+          const r = await fetch("/api/location", { headers: { "x-share-id": shareId }, cache: "no-store" });
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            $("ago").textContent = "";
+            notice(r.status === 404 ? "Nothing shared yet. Make sure Sharing is turned on in the iPhone app." : (j.error?.message || "Couldn't load the location."), r.status !== 404);
+            return;
+          }
+          clockSkew = j.serverTime ? j.serverTime - Date.now() : 0;
+          latest = j.latest;
+          const ll = [latest.lat, latest.lon];
+          marker.setLatLng(ll).addTo(map);
+          accCircle.setLatLng(ll).setRadius(latest.acc || 0).addTo(map);
+          trail.setLatLngs(j.track.map((p) => [p.lat, p.lon]));
+          if (showTrail) trail.addTo(map);
+          if (first) { map.setView(ll, 16); first = false; } else if (follow) map.panTo(ll);
+
+          $("title").textContent = j.device || "iPhone";
+          $("acc").textContent = latest.acc != null ? `±${Math.round(latest.acc)} m` : "–";
+          $("spd").textContent = latest.spd != null ? `${Math.round(latest.spd * 3.6)} km/h` : "–";
+          $("bat").textContent = j.battery != null ? `${Math.round(j.battery * 100)}%${j.charging ? " ⚡" : ""}` : "–";
+          $("directions").href = `https://www.google.com/maps/dir/?api=1&destination=${latest.lat},${latest.lon}`;
+          renderAgo();
+          reverseGeocode(latest);
+        } catch {
+          notice("No internet connection on this phone. Retrying…", true);
+        }
+      }
+
+      poll();
+      setInterval(() => { if (!document.hidden) poll(); }, POLL_MS);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(); });
+    }
+  </script>
+</body>
+</html>

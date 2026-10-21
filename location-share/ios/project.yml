@@ -1,0 +1,19 @@
+# XcodeGen spec: run `xcodegen` in this folder to create FindMe.xcodeproj.
+name: FindMe
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  FindMe:
+    type: application
+    platform: iOS
+    sources: [FindMe]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.findme
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_FILE: FindMe/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_STYLE: Automatic
