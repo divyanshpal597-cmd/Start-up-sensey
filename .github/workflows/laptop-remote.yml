@@ -1,0 +1,110 @@
+name: Laptop Remote apps
+
+# Builds the installable Laptop Remote app for Windows, macOS and Linux and puts
+# the downloads on the "Laptop Remote (latest)" release page of this repo.
+on:
+  push:
+    paths:
+      - "laptop-remote/**"
+      - ".github/workflows/laptop-remote.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: laptop-remote-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: laptop-remote
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pytest pytest-aiohttp
+      - run: python -m pytest -q
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            file: dist/LaptopRemote-Setup.exe
+          - os: macos-latest
+            file: dist/LaptopRemote-mac.dmg
+          - os: ubuntu-22.04
+            file: dist/LaptopRemote-linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: laptop-remote
+        shell: bash
+    env:
+      APP_VERSION: 1.0.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pyinstaller
+      - name: Install Inno Setup
+        if: runner.os == 'Windows'
+        run: |
+          if ! command -v iscc >/dev/null && [ ! -f "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" ]; then
+            choco install innosetup -y --no-progress
+          fi
+      - run: python packaging/build.py
+      - name: Smoke test (the app starts and serves its pairing page)
+        if: runner.os != 'macOS'
+        run: |
+          export LAPTOP_REMOTE_HOME="$RUNNER_TEMP/lr-home"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ./dist/LaptopRemote/LaptopRemote.exe --no-browser --no-tray &
+          else
+            ./dist/LaptopRemote-linux --no-browser --no-tray &
+          fi
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8766/ | grep -q "Pairing PIN"; then echo "started"; exit 0; fi
+            sleep 2
+          done
+          echo "app did not start"; cat "$LAPTOP_REMOTE_HOME/app.log" 2>/dev/null; exit 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}
+          path: laptop-remote/${{ matrix.file }}
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+      - name: Publish downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          chmod +x out/Linux/LaptopRemote-linux
+          gh release delete laptop-remote-latest --yes --cleanup-tag || true
+          gh release create laptop-remote-latest --prerelease --target "$GITHUB_SHA" \
+            --title "Laptop Remote (latest)" \
+            --notes "Control your laptop from your phone. Download the file for your laptop:
+
+          - **Windows:** LaptopRemote-Setup.exe
+          - **Mac (Apple M1/M2/M3/M4):** LaptopRemote-mac.dmg
+          - **Linux:** LaptopRemote-linux
+
+          Built from ${GITHUB_REF_NAME} at ${GITHUB_SHA::7}. Setup steps: laptop-remote/README.md" \
+            out/Windows/LaptopRemote-Setup.exe out/macOS/LaptopRemote-mac.dmg out/Linux/LaptopRemote-linux

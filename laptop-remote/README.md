@@ -6,25 +6,29 @@ There is nothing to install on the phone. It works in the phone's browser (Chrom
 
 Works on **Windows, macOS and Linux**.
 
-## Install and start (one time, about 2 minutes)
+## Install (one time)
 
-1. Install **Python 3.10 or newer** from <https://www.python.org/downloads/>.
-   On Windows, tick **"Add python.exe to PATH"** in the installer.
-2. Download this `laptop-remote` folder and put it anywhere (for example in Documents).
-3. Start it:
-   - **Windows:** double-click `Start Laptop Remote.bat`
-   - **Mac:** double-click `Start Laptop Remote.command` (the first time, right-click → Open)
-   - **Linux:** run `./start.sh`
+Download the file for your laptop from the **[Laptop Remote (latest)](https://github.com/divyanshpal597-cmd/Start-up-sensey/releases/tag/laptop-remote-latest)** page. You don't need Python or anything else.
 
-   The first start downloads what it needs (about a minute). After that it starts instantly, even offline.
-4. A page opens on the laptop with a **QR code** and a **6-digit PIN**.
+**Windows**
+1. Download **LaptopRemote-Setup.exe** and open it.
+2. If a blue "Windows protected your PC" box appears, click **More info → Run anyway**. It appears because the app isn't signed with a paid certificate.
+3. Click **Next → Install**, keep **"Start Laptop Remote and connect my phone"** ticked, and click **Finish**.
 
-## Connect your phone (one time)
+**Mac** (Apple M1/M2/M3/M4)
+1. Download **LaptopRemote-mac.dmg**, open it, and drag **Laptop Remote** into **Applications**.
+2. Open it from Applications. If macOS says it can't check the app, open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**.
+3. When asked, allow **Screen Recording** and **Accessibility** for Laptop Remote, then quit it from its menu-bar icon and open it again.
 
-1. Put your phone on the **same Wi-Fi** as the laptop.
-2. Scan the QR code with the phone camera.
-3. The phone will say the connection isn't private. Tap **Advanced → Proceed** (Chrome) or **Show Details → visit this website** (Safari). This is expected: the laptop made its own security certificate, so the connection *is* encrypted, it just isn't signed by a public authority.
-4. Tap **Pair**. Done. The phone stays paired, so next time just open the same link (tip: "Add to Home Screen").
+**Linux**
+1. Download **LaptopRemote-linux**, right-click it → Properties → allow running as a program (or `chmod +x LaptopRemote-linux`), and run it.
+
+The installer sets everything up for you:
+- Laptop Remote **starts by itself whenever you log in**, quietly, with an icon near the clock (the menu bar on a Mac).
+- On Windows it lets your phone through the firewall on home (Private) Wi-Fi.
+- The first time it runs, it opens the page with the QR code for connecting your phone.
+
+Click the tray icon at any time for **Connect a phone…**, **Start when I log in** (on/off) and **Quit**.
 
 ## Using it
 
@@ -36,7 +40,7 @@ Works on **Windows, macOS and Linux**.
 | **Files** | Browse every folder and drive. Open or save files to the phone, upload photos/files from the phone, make folders, delete. |
 | **More** | A terminal to run any command. See running programs and close them. See and remove paired phones. |
 
-Every action you take is shown in the laptop's console window and saved to `~/.laptop-remote/activity.log`.
+Every action you take is saved to `~/.laptop-remote/activity.log` on the laptop.
 
 ## Keeping it safe
 
@@ -44,8 +48,8 @@ Every action you take is shown in the laptop's console window and saved to `~/.l
 - **Encrypted.** All traffic between phone and laptop uses HTTPS, so others on the same Wi-Fi can't see your screen or what you type.
 - **Your network only.** Connections from the public internet are refused, even if your router exposes the port.
 - **Other websites can't use it.** The login is a secure, same-site-only cookie, and every action checks the request came from the Laptop Remote page itself.
-- **Nothing runs while it's closed.** Close the console window and nothing is listening any more.
-- **Lost your phone?** Open the pairing page on the laptop (`http://127.0.0.1:8766` while it runs) and click **Remove**, or run `Start Laptop Remote` with `remove-all`.
+- **Off when you want it off.** Tray icon → **Quit** stops it completely; untick **Start when I log in** to keep it from starting again.
+- **Lost your phone?** On the laptop, click the tray icon → **Connect a phone…** and click **Remove** next to that phone.
 - Risky actions (shut down, restart, delete, close a program) ask for confirmation on the phone.
 
 Treat a paired phone like your laptop's password: anyone holding your unlocked phone can control the laptop. Keep a screen lock on your phone.
@@ -56,13 +60,17 @@ It only accepts connections from your own network on purpose. To use it from any
 
 ## First-time permissions
 
-- **Mac:** the first time you use the screen or mouse, macOS asks for permission. Open **System Settings → Privacy & Security** and allow **Terminal** (or whichever app runs the script) under both **Screen Recording** and **Accessibility**, then restart Laptop Remote.
+- **Mac:** the first time you use the screen or mouse, macOS asks for permission. Open **System Settings → Privacy & Security** and allow **Laptop Remote** under both **Screen Recording** and **Accessibility**, then quit and reopen it.
 - **Windows:** if Windows Firewall asks, allow access on **Private networks**. If the phone can't connect, make sure your Wi-Fi is set to *Private*, not *Public*.
 - **Linux:** screen and mouse control need an X11 session. On Wayland (the default on recent Ubuntu/Fedora), choose "Ubuntu on Xorg" on the login screen.
 
+## Running from source instead
+
+If you prefer not to use the installer (or have an Intel Mac), install Python 3.10+ and double-click `Start Laptop Remote.bat` (Windows) or `Start Laptop Remote.command` (Mac), or run `./start.sh` (Linux).
+
 ## Options
 
-Run these from a terminal in this folder (`start.sh` on Mac/Linux, `"Start Laptop Remote.bat"` on Windows), or with `python -m laptop_remote`:
+Pass these to the app (or to the start scripts / `python -m laptop_remote`):
 
 | Command | Does |
 |---|---|
@@ -76,7 +84,8 @@ The certificate, paired phones and activity log live in `~/.laptop-remote` (on W
 
 ## Troubleshooting
 
-- **Phone can't open the page:** check both are on the same Wi-Fi (not a guest network), and allow the app through the laptop's firewall. If the laptop shows several addresses, try the others.
+- **Phone can't open the page:** check both are on the same Wi-Fi (not a guest network). On Windows, set the Wi-Fi's **Network profile type** to **Private** (Settings → Network & internet → Wi-Fi → your network).
+- **Home-screen icon stopped working:** the laptop's Wi-Fi address changed (for example, on a different network). Click the tray icon → **Connect a phone…** and scan the new QR code.
 - **"Could not start… already running":** another copy is open, or something else uses port 8765. Close it or use `--port 9000`.
 - **Screen is black on Mac:** give Screen Recording permission (see above).
 - **Mouse/keyboard does nothing on Mac:** give Accessibility permission.
@@ -87,6 +96,9 @@ The certificate, paired phones and activity log live in `~/.laptop-remote` (on W
 ```
 pip install -r requirements.txt pytest pytest-aiohttp
 python -m pytest
+pip install pyinstaller && python packaging/build.py   # builds the installer for this OS
 ```
+
+Every push that changes `laptop-remote/` runs `.github/workflows/laptop-remote.yml`, which tests, builds Windows/Mac/Linux apps and updates the release page.
 
 `laptop_remote/server.py` is the phone-facing HTTPS server, `laptop_page.py` the localhost-only pairing page, `auth.py` the PIN pairing, `static/` the phone app.

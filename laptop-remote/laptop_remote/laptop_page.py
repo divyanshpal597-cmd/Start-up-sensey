@@ -9,6 +9,10 @@ import qrcode.image.svg
 from aiohttp import web
 
 from .auth import Pairing
+from .system import SYSTEM
+
+FIREWALL_TIP = ("<p class='muted'>Phone can't open the page? In Windows Settings → Network &amp; internet → "
+                "Wi-Fi → your network, set <b>Network profile type</b> to <b>Private</b>.</p>")
 
 
 def qr_svg(text: str) -> str:
@@ -42,7 +46,7 @@ table {{ width:100%; border-collapse:collapse; }} td {{ padding:10px 4px; border
 .warn {{ color:#b26a00; }}
 </style></head><body><main>
 <h1>Laptop Remote is running</h1>
-<div class="muted">Keep this window open while you use your phone. Close the black console window to stop.</div>
+<div class="muted">It runs in the background and starts by itself when you log in. To open this page again or to quit, click the Laptop Remote icon near the clock.</div>
 <div class="card">{pair_section}</div>
 <div class="card"><h2 style="margin-top:0">Paired phones</h2>{devices}</div>
 </main>
@@ -93,9 +97,12 @@ def build_laptop_app(pairing: Pairing, phone_url: str, fingerprint: str, port: i
                       This is expected: the laptop made its own security certificate.
                       <div class="muted">Certificate fingerprint starts with <code>{fingerprint}</code></div></li>
                   <li>Enter the PIN and tap <b>Pair</b>.</li>
+                  <li>Tip: in the phone browser's menu, choose <b>Add to Home Screen</b> to get an app icon.</li>
                 </ol>
+                {{firewall_tip}}
               </div>
             </div>"""
+            pair_section = pair_section.replace("{firewall_tip}", FIREWALL_TIP if SYSTEM == "Windows" else "")
         else:
             why = ("Pairing is locked because of too many wrong PINs."
                    if state == "locked" else "No pairing PIN is active.")
