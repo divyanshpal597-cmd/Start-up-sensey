@@ -1,0 +1,9 @@
+{
+  "name": "Laptop Remote",
+  "short_name": "Laptop",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#2f6df6",
+  "icons": [{ "src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

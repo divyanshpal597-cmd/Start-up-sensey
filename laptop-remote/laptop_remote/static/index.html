@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2f6df6">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Laptop Remote</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/icon.svg">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+
+<!-- Pairing -->
+<section id="pair-view" class="center-view" hidden>
+  <div class="pair-card">
+    <img src="/static/icon.svg" alt="" class="logo">
+    <h1>Connect to <span id="pair-laptop">your laptop</span></h1>
+    <p class="muted">Enter the 6-digit PIN shown on your laptop's screen.</p>
+    <form id="pair-form">
+      <label>PIN
+        <input id="pair-pin" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
+      </label>
+      <label>Name for this phone
+        <input id="pair-name" maxlength="40" required>
+      </label>
+      <button type="submit" class="primary wide">Pair</button>
+      <p id="pair-error" class="error" role="alert"></p>
+    </form>
+  </div>
+</section>
+
+<!-- App -->
+<div id="app-view" hidden>
+  <header class="topbar">
+    <div>
+      <div class="title" id="laptop-name">Laptop</div>
+      <div class="status"><span id="conn-dot" class="dot"></span><span id="conn-text">Connecting…</span></div>
+    </div>
+    <div id="battery" class="muted small"></div>
+  </header>
+
+  <main>
+    <!-- Screen -->
+    <section class="tab" data-tab="screen">
+      <div id="screen-wrap" class="screen-wrap">
+        <img id="screen" alt="Laptop screen">
+        <div id="screen-hint" class="screen-hint">Loading screen…</div>
+      </div>
+      <div class="toolbar">
+        <button data-act="kbd-toggle" title="Keyboard">⌨️ Type</button>
+        <select id="quality" aria-label="Picture quality">
+          <option value="fast">Fast</option>
+          <option value="balanced" selected>Balanced</option>
+          <option value="sharp">Sharp</option>
+        </select>
+        <select id="monitor" aria-label="Screen" hidden></select>
+        <button data-act="fullscreen" title="Full screen">⛶</button>
+      </div>
+      <p class="muted small hint-text">Tap = click · Hold = right-click · Drag = drag · Two fingers = scroll</p>
+    </section>
+
+    <!-- Touchpad -->
+    <section class="tab" data-tab="pad" hidden>
+      <div id="pad" class="pad"><span>Touchpad</span><small>1 finger: move · tap: click<br>2 fingers: scroll · 2-finger tap: right-click<br>hold then move: drag</small></div>
+      <div class="pad-buttons">
+        <button data-click="left">Left</button>
+        <button data-click="middle">Middle</button>
+        <button data-click="right">Right</button>
+      </div>
+      <label class="row small muted">Speed <input id="speed" type="range" min="0.5" max="4" step="0.25" value="1.75"></label>
+    </section>
+
+    <!-- Keyboard (shared panel) -->
+    <section id="keyboard" class="keyboard" hidden>
+      <div class="kbd-input-row">
+        <input id="live-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+               placeholder="Type here — goes straight to the laptop">
+        <button data-act="kbd-toggle" aria-label="Close keyboard">✕</button>
+      </div>
+      <div class="keys">
+        <button data-mod="ctrl">Ctrl</button><button data-mod="alt" class="os-alt">Alt</button>
+        <button data-mod="shift">Shift</button><button data-mod="cmd" class="os-cmd">Win</button>
+        <button data-key="esc">Esc</button><button data-key="tab">Tab</button>
+        <button data-key="backspace">⌫</button><button data-key="delete">Del</button>
+        <button data-key="enter">Enter</button><button data-key="up">↑</button>
+        <button data-key="home">Home</button><button data-key="end">End</button>
+        <button data-key="left">←</button><button data-key="down">↓</button><button data-key="right">→</button>
+        <button data-key="pageup">PgUp</button><button data-key="pagedown">PgDn</button>
+      </div>
+      <div class="keys fkeys">
+        <button data-key="f1">F1</button><button data-key="f2">F2</button><button data-key="f3">F3</button>
+        <button data-key="f4">F4</button><button data-key="f5">F5</button><button data-key="f6">F6</button>
+        <button data-key="f7">F7</button><button data-key="f8">F8</button><button data-key="f9">F9</button>
+        <button data-key="f10">F10</button><button data-key="f11">F11</button><button data-key="f12">F12</button>
+      </div>
+      <div class="shortcuts" id="shortcuts"></div>
+    </section>
+
+    <!-- Controls -->
+    <section class="tab" data-tab="controls" hidden>
+      <h2>Sound &amp; media</h2>
+      <div class="grid3">
+        <button data-key="volumedown">🔉 Vol −</button>
+        <button data-key="mute">🔇 Mute</button>
+        <button data-key="volumeup">🔊 Vol +</button>
+        <button data-key="previous">⏮ Prev</button>
+        <button data-key="playpause">⏯ Play</button>
+        <button data-key="next">⏭ Next</button>
+      </div>
+
+      <h2>Open</h2>
+      <form class="inline-form" data-open="url">
+        <input placeholder="Website, e.g. youtube.com" inputmode="url" autocapitalize="off" required>
+        <button class="primary">Open</button>
+      </form>
+      <form class="inline-form" data-open="app">
+        <input id="app-input" placeholder="App name, e.g. Notepad" autocapitalize="off" required>
+        <button class="primary">Open</button>
+      </form>
+
+      <h2>Clipboard</h2>
+      <textarea id="clip-text" rows="3" placeholder="Text to send to the laptop's clipboard"></textarea>
+      <div class="grid2">
+        <button data-act="clip-send">Send to laptop</button>
+        <button data-act="clip-get">Get laptop's clipboard</button>
+      </div>
+
+      <h2>Power</h2>
+      <div class="grid3">
+        <button data-power="lock">🔒 Lock</button>
+        <button data-power="screen_off">🌑 Screen off</button>
+        <button data-power="sleep" data-confirm="Put the laptop to sleep? You won't be able to wake it from the phone.">😴 Sleep</button>
+        <button data-power="signout" data-confirm="Sign out? Unsaved work in open apps may be lost." class="danger">↩ Sign out</button>
+        <button data-power="restart" data-confirm="Restart the laptop? Unsaved work may be lost." class="danger">🔄 Restart</button>
+        <button data-power="shutdown" data-confirm="Shut down the laptop? Unsaved work may be lost." class="danger">⏻ Shut down</button>
+      </div>
+
+      <h2>Status</h2>
+      <div id="info" class="info-grid"></div>
+    </section>
+
+    <!-- Files -->
+    <section class="tab" data-tab="files" hidden>
+      <div id="file-roots" class="chips"></div>
+      <div class="path-row">
+        <button data-act="file-up" aria-label="Up one folder">⬆</button>
+        <div id="file-path" class="path"></div>
+      </div>
+      <div class="grid3">
+        <label class="button-like">⬆ Upload<input id="upload" type="file" multiple hidden></label>
+        <button data-act="file-mkdir">＋ Folder</button>
+        <button data-act="file-hidden" id="hidden-btn">Show hidden</button>
+      </div>
+      <ul id="file-list" class="list"></ul>
+    </section>
+
+    <!-- More -->
+    <section class="tab" data-tab="more" hidden>
+      <h2>Terminal</h2>
+      <pre id="term-out" class="term" aria-live="polite"></pre>
+      <form id="term-form" class="inline-form">
+        <input id="term-in" placeholder="Command" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+        <button class="primary">Run</button>
+      </form>
+      <p class="muted small" id="term-cwd"></p>
+
+      <h2>Running programs <button class="small-btn" data-act="procs">Refresh</button></h2>
+      <ul id="proc-list" class="list"></ul>
+
+      <h2>Paired phones</h2>
+      <ul id="device-list" class="list"></ul>
+      <button class="danger wide" data-act="unpair">Unpair this phone</button>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-goto="screen" class="active"><span>🖥</span>Screen</button>
+    <button data-goto="pad"><span>🖱</span>Touchpad</button>
+    <button data-goto="controls"><span>🎛</span>Controls</button>
+    <button data-goto="files"><span>📁</span>Files</button>
+    <button data-goto="more"><span>⋯</span>More</button>
+  </nav>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
