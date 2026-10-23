@@ -31,8 +31,9 @@ Name: "{autoprograms}\Laptop Remote"; Filename: "{app}\LaptopRemote.exe"
 Name: "{autodesktop}\Laptop Remote"; Filename: "{app}\LaptopRemote.exe"
 
 [Registry]
-; Start at login. The app's tray menu can turn this off.
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "LaptopRemote"; ValueData: """{app}\LaptopRemote.exe"" --autostart"; Flags: uninsdeletevalue
+; Laptop Remote only runs when you open it. If you turned on "Start when I log in"
+; in its tray menu, uninstalling removes that again.
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: none; ValueName: "LaptopRemote"; Flags: uninsdeletevalue dontcreatekey
 
 [Run]
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Laptop Remote"""; Flags: runhidden

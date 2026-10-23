@@ -46,7 +46,7 @@ table {{ width:100%; border-collapse:collapse; }} td {{ padding:10px 4px; border
 .warn {{ color:#b26a00; }}
 </style></head><body><main>
 <h1>Laptop Remote is running</h1>
-<div class="muted">It runs in the background and starts by itself when you log in. To open this page again or to quit, click the Laptop Remote icon near the clock.</div>
+<div class="muted">It runs only while it is open. To open this page again, unpair phones or quit, click the Laptop Remote icon near the clock. After you quit, no phone can reach this laptop.</div>
 <div class="card">{pair_section}</div>
 <div class="card"><h2 style="margin-top:0">Paired phones</h2>{devices}</div>
 </main>

@@ -24,11 +24,13 @@ Download the file for your laptop from the **[Laptop Remote (latest)](https://gi
 1. Download **LaptopRemote-linux**, right-click it → Properties → allow running as a program (or `chmod +x LaptopRemote-linux`), and run it.
 
 The installer sets everything up for you:
-- Laptop Remote **starts by itself whenever you log in**, quietly, with an icon near the clock (the menu bar on a Mac).
 - On Windows it lets your phone through the firewall on home (Private) Wi-Fi.
 - The first time it runs, it opens the page with the QR code for connecting your phone.
+- While it runs, it sits quietly as an icon near the clock (the menu bar on a Mac).
 
-Click the tray icon at any time for **Connect a phone…**, **Start when I log in** (on/off) and **Quit**.
+**It only runs when you open it.** Open **Laptop Remote** from the Start menu / desktop / Applications when you want to use your phone, and click the icon → **Quit** when you're done. After you quit, nothing is listening and no phone can reach the laptop. If you'd like it to start every time you log in, tick **Start when I log in** in the icon's menu (off by default).
+
+The icon's menu: **Connect a phone…**, **Start when I log in**, **Unpair all phones**, **Quit**.
 
 ## Using it
 
@@ -48,8 +50,9 @@ Every action you take is saved to `~/.laptop-remote/activity.log` on the laptop.
 - **Encrypted.** All traffic between phone and laptop uses HTTPS, so others on the same Wi-Fi can't see your screen or what you type.
 - **Your network only.** Connections from the public internet are refused, even if your router exposes the port.
 - **Other websites can't use it.** The login is a secure, same-site-only cookie, and every action checks the request came from the Laptop Remote page itself.
-- **Off when you want it off.** Tray icon → **Quit** stops it completely; untick **Start when I log in** to keep it from starting again.
-- **Lost your phone?** On the laptop, click the tray icon → **Connect a phone…** and click **Remove** next to that phone.
+- **Off when you close it.** Tray icon → **Quit** stops it completely: nothing keeps running in the background and no phone can connect until you open it again.
+- **Lost your phone?** On the laptop, click the tray icon → **Unpair all phones** (or **Connect a phone…** → **Remove** next to that phone).
+- **Uninstalling removes everything it added:** the app, the firewall rule and the start-at-login entry. Your settings folder `~/.laptop-remote` can be deleted by hand.
 - Risky actions (shut down, restart, delete, close a program) ask for confirmation on the phone.
 
 Treat a paired phone like your laptop's password: anyone holding your unlocked phone can control the laptop. Keep a screen lock on your phone.

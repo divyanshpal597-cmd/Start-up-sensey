@@ -2,7 +2,6 @@
 
 import argparse
 import asyncio
-import json
 import logging
 import logging.handlers
 import os
@@ -16,7 +15,7 @@ from aiohttp import web
 
 from . import autostart
 from .auth import Pairing
-from .config import DeviceStore, data_dir, write_private
+from .config import DeviceStore, data_dir
 from .laptop_page import build_laptop_app
 from .server import build_app
 from .system import SYSTEM
@@ -163,6 +162,13 @@ def run_with_tray(remote: Remote, open_page: bool) -> int:
         else:
             autostart.enable()
 
+    def unpair_all(icon, item):
+        count = remote.store.clear()
+        try:
+            icon.notify(f"{count} phone(s) unpaired. They need a new PIN to connect again.", "Laptop Remote")
+        except Exception:
+            pass
+
     def quit_app(icon, item):
         remote.stop()
         icon.stop()
@@ -171,6 +177,7 @@ def run_with_tray(remote: Remote, open_page: bool) -> int:
     if autostart.supported():
         items.append(pystray.MenuItem("Start when I log in", toggle_autostart,
                                       checked=lambda item: autostart.is_enabled()))
+    items.append(pystray.MenuItem("Unpair all phones", unpair_all))
     items.append(pystray.Menu.SEPARATOR)
     items.append(pystray.MenuItem("Quit Laptop Remote", quit_app))
     icon = pystray.Icon("LaptopRemote", draw(64), "Laptop Remote is running", pystray.Menu(*items))
@@ -184,23 +191,6 @@ def run_with_tray(remote: Remote, open_page: bool) -> int:
     remote.stop()
     thread.join(5)
     return 0
-
-
-def first_run_setup(folder) -> None:
-    """The installed app turns on start-at-login the first time it runs."""
-    settings_path = folder / "settings.json"
-    try:
-        settings = json.loads(settings_path.read_text())
-    except (OSError, ValueError):
-        settings = {}
-    if settings.get("autostart_initialized") or not autostart.supported():
-        return
-    try:
-        autostart.enable()
-    except OSError as e:
-        logging.warning("Could not turn on start at login: %s", e)
-    settings["autostart_initialized"] = True
-    write_private(settings_path, json.dumps(settings).encode())
 
 
 def main() -> int:
@@ -257,7 +247,6 @@ def main() -> int:
     audit.propagate = False
     logging.basicConfig(level=logging.WARNING)
 
-    first_run_setup(folder)
     remote = Remote(args)
 
     use_tray = not args.no_tray
